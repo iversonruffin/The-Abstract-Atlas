@@ -14,10 +14,10 @@ export const APP_CONFIG = {
    */
   guestLocationIds: ['federal-hill'],
 
-  apiUrl: 'https://hjkia9et96.execute-api.us-east-1.amazonaws.com',
+  apiUrl: 'https://hprn6cli18.execute-api.us-east-1.amazonaws.com',
   cognito: {
     region: 'us-east-1',
-    userPoolId: 'us-east-1_yrIVBpQ4G',
-    clientId: '717j94j05fudmv505q5pjkm3dp',
+    userPoolId: 'us-east-1_MZtZaMj5L',
+    clientId: '1c8u44b2ibp5l78binvrhvnli',
   },
 };
