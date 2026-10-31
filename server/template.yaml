@@ -120,13 +120,29 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref GameTable
+      # IMPORTANT: list the methods explicitly. Do NOT use `Method: ANY`.
+      # ANY includes OPTIONS, which would send the browser's CORS preflight to the Lambda
+      # (it answers 404, so browsers block every real request). With no OPTIONS route,
+      # API Gateway answers preflights itself using the CorsConfiguration above.
       Events:
-        Any:
+        Get:
           Type: HttpApi
           Properties:
             ApiId: !Ref Api
             Path: /{proxy+}
-            Method: ANY
+            Method: GET
+        Post:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Path: /{proxy+}
+            Method: POST
+        Patch:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Path: /{proxy+}
+            Method: PATCH
 
   # ----------------------------------------------------------- Cost guardrail
   MonthlyBudget:
