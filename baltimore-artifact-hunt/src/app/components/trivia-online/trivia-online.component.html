@@ -1,0 +1,65 @@
+<div class="trivia-status" *ngIf="phase === 'loading'">Loading your challenge…</div>
+
+<div class="trivia-status error" *ngIf="phase === 'error'">
+  <p>{{ errorMessage }}</p>
+  <button class="online-btn" *ngIf="errorNeedsSignUp" (click)="openSignUp()">Sign up to unlock</button>
+  <button class="online-btn secondary" *ngIf="!errorNeedsSignUp" (click)="begin()">Try again</button>
+</div>
+
+<div class="trivia-wrap" *ngIf="phase === 'question' && question">
+  <div class="trivia-header">
+    <span class="trivia-progress">Question {{ question.index + 1 }} / {{ question.total }}</span>
+    <span class="trivia-timer" [class.low]="secondsLeft <= 3">{{ secondsLeft }}s</span>
+  </div>
+
+  <h3 class="trivia-prompt">{{ question.prompt }}</h3>
+
+  <div class="trivia-choices">
+    <button
+      *ngFor="let choice of question.choices; let i = index"
+      class="trivia-choice"
+      [class.selected]="selectedChoice === i"
+      [class.correct]="answerState !== 'unanswered' && i === correctChoice"
+      [class.incorrect]="answerState === 'incorrect' && selectedChoice === i"
+      [disabled]="answerState !== 'unanswered'"
+      (click)="select(i)"
+    >
+      {{ choice }}
+    </button>
+  </div>
+
+  <p class="trivia-feedback" *ngIf="answerState === 'timeout'">Time's up!</p>
+  <p class="trivia-feedback" *ngIf="answerState === 'correct'">Correct! 🎉</p>
+  <p class="trivia-feedback" *ngIf="answerState === 'incorrect'">Not quite.</p>
+</div>
+
+<div class="trivia-results" *ngIf="phase === 'done' && result as r">
+  <div class="trivia-badge-icon">{{ hotspot.badge.icon }}</div>
+  <h3>{{ r.correctAnswers }} / {{ r.totalQuestions }} correct</h3>
+  <p class="trivia-score">Score: {{ r.score }} pts</p>
+  <p class="trivia-best" *ngIf="!r.isNewBest">Your best here: {{ r.bestScore }} pts</p>
+  <p class="trivia-best" *ngIf="r.isNewBest && r.bestScore > 0">New personal best!</p>
+  <p class="trivia-badge-earned" *ngIf="r.badgeEarned">
+    Badge earned: <strong>{{ r.badge?.name }}</strong>
+  </p>
+  <p class="trivia-badge-earned" *ngIf="!r.badgeEarned">No badge this time — give it another shot!</p>
+
+  <!-- Guests who finish a location: save badges + show what an account unlocks. -->
+  <ng-container *ngIf="!api.signedIn() && r.signUpPrompt as prompt">
+    <div class="signup-prompt">
+      <h4>{{ prompt.message }}</h4>
+      <p class="prompt-warning">Without an account, your badges only live in this browser.</p>
+      <div class="prompt-badges">
+        <span class="prompt-pill" *ngFor="let b of prompt.badges">{{ b.icon }} {{ b.name }}</span>
+      </div>
+      <p class="prompt-sub">You unlock these when you sign up:</p>
+      <ul class="unlock-list">
+        <li *ngFor="let loc of prompt.unlockedLocations">
+          <strong>{{ loc.name }}</strong><span> — {{ loc.tagline }}</span>
+        </li>
+      </ul>
+      <button class="online-btn" (click)="openSignUp()">Sign up to save my badges</button>
+      <button class="online-btn secondary" (click)="openLogin()">I already have an account</button>
+    </div>
+  </ng-container>
+</div>

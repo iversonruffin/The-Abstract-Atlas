@@ -53,7 +53,10 @@
       <button id="story-back" (click)="showGuide()">‹ Back to guide</button>
       <div class="modal-kicker">Challenge</div>
       <h2>{{ hotspot.name }} Trivia</h2>
-      <app-trivia-challenge [hotspot]="hotspot" (finished)="onChallengeFinished()"></app-trivia-challenge>
+      <!-- Offline mode (no backend configured): the original local trivia. -->
+      <app-trivia-challenge *ngIf="!api.enabled" [hotspot]="hotspot" (finished)="onChallengeFinished()"></app-trivia-challenge>
+      <!-- Online mode: the server supplies questions and scores. -->
+      <app-trivia-online *ngIf="api.enabled" [hotspot]="hotspot" (finished)="onChallengeFinished()"></app-trivia-online>
     </div>
   </div>
 </div>

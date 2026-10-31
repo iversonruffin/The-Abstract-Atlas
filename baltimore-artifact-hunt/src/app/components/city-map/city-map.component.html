@@ -11,10 +11,20 @@
   </div>
 
   <div class="location-grid">
-    <a class="location-card" *ngFor="let loc of locations" [routerLink]="['/location', loc.id]">
-      <h2>{{ loc.name }}</h2>
-      <p>{{ loc.tagline }}</p>
-      <app-progress-bar [pct]="progress.getLocationProgressPct(loc.id)"></app-progress-bar>
-    </a>
+    <ng-container *ngFor="let loc of locations">
+      <a class="location-card" *ngIf="!isLocked(loc.id); else lockedCard" [routerLink]="['/location', loc.id]">
+        <h2>{{ loc.name }}</h2>
+        <p>{{ loc.tagline }}</p>
+        <app-progress-bar [pct]="progress.getLocationProgressPct(loc.id)"></app-progress-bar>
+      </a>
+      <!-- Guests (no account): account-only locations show as locked and open the sign-up dialog. -->
+      <ng-template #lockedCard>
+        <button type="button" class="location-card location-card-locked" (click)="promptSignUp(loc.name)">
+          <h2>🔒 {{ loc.name }}</h2>
+          <p>{{ loc.tagline }}</p>
+          <p class="unlock-note">Sign up to unlock</p>
+        </button>
+      </ng-template>
+    </ng-container>
   </div>
 </div>

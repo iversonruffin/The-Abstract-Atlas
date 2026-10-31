@@ -12,16 +12,19 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 import Parallax from 'parallax-js';
 import { CityLocation, Hotspot } from '../../models/game.models';
+import { AuthUiService } from '../../services/auth-ui.service';
+import { GameApiService } from '../../services/game-api.service';
 import { GameDataService } from '../../services/game-data.service';
 import { ProgressService } from '../../services/progress.service';
 import { HotspotModalComponent } from '../hotspot-modal/hotspot-modal.component';
 import { LeaderboardComponent } from '../leaderboard/leaderboard.component';
+import { LeaderboardOnlineComponent } from '../leaderboard-online/leaderboard-online.component';
 import { ProgressBarComponent } from '../progress-bar/progress-bar.component';
 
 @Component({
   selector: 'app-location-scene',
   standalone: true,
-  imports: [CommonModule, RouterLink, HotspotModalComponent, ProgressBarComponent, LeaderboardComponent],
+  imports: [CommonModule, RouterLink, HotspotModalComponent, ProgressBarComponent, LeaderboardComponent, LeaderboardOnlineComponent],
   templateUrl: './location-scene.component.html',
   styleUrl: './location-scene.component.css',
 })
@@ -43,6 +46,8 @@ export class LocationSceneComponent implements OnInit, AfterViewInit, OnDestroy 
     private router: Router,
     private gameData: GameDataService,
     public progress: ProgressService,
+    public api: GameApiService,
+    private authUi: AuthUiService,
   ) {}
 
   ngOnInit() {
@@ -52,6 +57,18 @@ export class LocationSceneComponent implements OnInit, AfterViewInit, OnDestroy 
 
     if (!this.location) {
       this.router.navigate(['/']);
+    }
+
+    // Online mode: guests can only open Federal Hill. If someone lands here directly
+    // (e.g. a QR code or a typed URL), send them back and offer sign-up.
+    if (this.api.enabled && this.location) {
+      const name = this.location.name;
+      void this.api.whenReady().then(() => {
+        if (this.api.isLocked(locationId)) {
+          this.router.navigate(['/']);
+          this.authUi.show('signup', `Sign up to unlock ${name}.`);
+        }
+      });
     }
   }
 

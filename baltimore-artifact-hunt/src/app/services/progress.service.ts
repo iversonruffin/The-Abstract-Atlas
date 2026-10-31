@@ -37,6 +37,22 @@ export class ProgressService {
     return this.playerName();
   }
 
+  // --- Online mode (added with the backend) ---------------------------------
+  // GameApiService calls these so the server's copy of progress shows up in the
+  // existing screens. They deliberately do NOT write to localStorage.
+
+  /** Replace local results with what the server says. */
+  hydrateFromServer(results: PlayerHotspotResult[], playerName: string) {
+    this.results.set(Object.fromEntries(results.map((r) => [r.hotspotId, r])));
+    this.playerName.set(playerName || 'Explorer');
+  }
+
+  /** Clear results (signed out / nobody playing yet). */
+  resetFromServer() {
+    this.results.set({});
+    this.playerName.set('Explorer');
+  }
+
   /** A hotspot is unlocked if it has no prerequisites, or all prerequisites are completed. */
   isHotspotUnlocked(hotspotId: string): boolean {
     const hotspot = this.gameData.getHotspot(hotspotId);

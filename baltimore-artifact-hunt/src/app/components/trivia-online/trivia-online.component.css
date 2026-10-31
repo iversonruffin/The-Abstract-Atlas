@@ -1,0 +1,89 @@
+/* Extra styles for the online trivia; the question/answer styles come from
+   ../trivia-challenge/trivia-challenge.component.css (loaded alongside this file). */
+
+.trivia-status {
+  text-align: center;
+  color: #4a3320;
+  padding: 24px 0;
+}
+.trivia-status.error p {
+  margin: 0 0 12px;
+  color: #c0392b;
+}
+
+.trivia-best {
+  margin: 0 0 6px;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.signup-prompt {
+  margin-top: 18px;
+  padding: 16px;
+  text-align: left;
+  background: rgba(168, 100, 26, 0.1);
+  border: 2px dashed #a8641a;
+  border-radius: 14px;
+  color: #4a3320;
+}
+.signup-prompt h4 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+.prompt-warning {
+  margin: 0 0 10px;
+  font-size: 13px;
+  opacity: 0.85;
+}
+.prompt-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.prompt-pill {
+  background: rgba(122, 90, 52, 0.15);
+  border: 1px solid rgba(122, 90, 52, 0.4);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 13px;
+}
+.prompt-sub {
+  margin: 0 0 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: bold;
+  color: #a8641a;
+}
+.unlock-list {
+  margin: 0 0 14px;
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.online-btn {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 11px 14px;
+  border: none;
+  border-radius: 10px;
+  background: #a8641a;
+  color: #fff;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.online-btn:hover {
+  background: #8d5314;
+}
+.online-btn.secondary {
+  background: transparent;
+  color: #4a3320;
+  border: 2px solid #7a5a34;
+}
+.online-btn.secondary:hover {
+  background: rgba(122, 90, 52, 0.12);
+}

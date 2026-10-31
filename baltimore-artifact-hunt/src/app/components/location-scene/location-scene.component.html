@@ -60,7 +60,8 @@
   </div>
 
   <div id="leaderboard-panel" *ngIf="leaderboardVisible">
-    <app-leaderboard [locationId]="location.id"></app-leaderboard>
+    <app-leaderboard *ngIf="!api.enabled" [locationId]="location.id"></app-leaderboard>
+    <app-leaderboard-online *ngIf="api.enabled" [locationId]="location.id"></app-leaderboard-online>
   </div>
 
   <h2 id="hint" [style.opacity]="hintVisible ? 1 : 0">Hover a beacon, then click it to explore</h2>

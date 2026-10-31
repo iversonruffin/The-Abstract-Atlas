@@ -82,3 +82,19 @@
   opacity: 0.8;
   line-height: 1.4;
 }
+
+/* Locked (guest) cards: same card look, rendered as a button. */
+.location-card-locked {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  opacity: 0.8;
+  border-style: dashed;
+}
+.location-card-locked .unlock-note {
+  margin: 0;
+  font-weight: bold;
+  color: #ffd65c;
+  opacity: 1;
+}
