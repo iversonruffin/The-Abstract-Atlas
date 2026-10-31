@@ -5,6 +5,12 @@
 /** Network + render slack before an answer counts as late (milliseconds). */
 export const GRACE_MS = 1500;
 
+/**
+ * The client shows right/wrong feedback for this long before revealing the next question,
+ * so the next question's clock starts this far in the future (answers can't be "early").
+ */
+export const FEEDBACK_MS = 900;
+
 export interface AnswerOutcome {
   correct: boolean;
   timedOut: boolean;

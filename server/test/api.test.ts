@@ -142,6 +142,25 @@ describe('guest flow', () => {
   });
 });
 
+describe('question timing', () => {
+  it('does not charge the 0.9s feedback pause against the next question', async () => {
+    const headers = user('timer');
+    const start = await call('POST', '/challenges/federal-hill-beacon/start', { headers });
+    const hs = getHotspot('federal-hill-beacon')!;
+    const answer = async (q: any, idx: number) =>
+      call('POST', '/challenges/federal-hill-beacon/answer', { headers, body: { attemptId: start.json.attemptId, choiceIndex: idx } });
+    const correctShown = (q: any) => q.choices.indexOf(hs.questions.find((x) => x.id === q.id)!.choices[hs.questions.find((x) => x.id === q.id)!.correctIndex]);
+
+    clock += 1000; // Q1 answered after 1s -> 100 + 9*10
+    const r1 = await answer(start.json.question, correctShown(start.json.question));
+    expect(r1.json.pointsAwarded).toBe(190);
+
+    clock += 900; // client is still showing feedback; Q2 has not even appeared yet
+    const r2 = await answer(r1.json.next, correctShown(r1.json.next));
+    expect(r2.json.pointsAwarded).toBe(200); // elapsed clamps to 0, full 10s left
+  });
+});
+
 describe('accounts and leaderboard', () => {
   it('lets signed-in users play every location', async () => {
     const res = await call('POST', '/challenges/pigtown-beacon/start', { headers: user('u1') });
@@ -156,6 +175,8 @@ describe('accounts and leaderboard', () => {
   });
 
   it('ranks registered players and leaves guests off the leaderboard', async () => {
+    await call('PATCH', '/me', { headers: user('fast', 'fast@example.com'), body: { playerName: 'fast' } });
+    await call('PATCH', '/me', { headers: user('slow', 'slow@example.com'), body: { playerName: 'slow' } });
     await playRun(user('fast', 'fast@example.com'), 'federal-hill-beacon', { secondsPerQuestion: 1 });
     await playRun(user('slow', 'slow@example.com'), 'federal-hill-beacon', { secondsPerQuestion: 7 });
     await playRun(await newGuest(), 'federal-hill-beacon', { secondsPerQuestion: 0 });
@@ -186,10 +207,13 @@ describe('claiming guest progress on sign-up', () => {
     expect(claim.status).toBe(200);
     expect(claim.json.claimed).toBe(1);
     expect(claim.json.badges.map((b: any) => b.id)).toEqual(['hilltop-adventurer']);
-    expect(claim.json.player).toMatchObject({ name: 'newbie', isGuest: false });
+    expect(claim.json.player.isGuest).toBe(false);
+    expect(claim.json.player.name).toMatch(/^Explorer-\d{4}$/); // never derived from the email
 
     const board = await call('GET', '/leaderboard/federal-hill');
-    expect(board.json.entries).toEqual([{ rank: 1, playerName: 'newbie', score: 900 }]);
+    expect(board.json.entries).toHaveLength(1);
+    expect(board.json.entries[0]).toMatchObject({ rank: 1, score: 900 });
+    expect(JSON.stringify(board.json)).not.toContain('newbie');
 
     // The guest profile is gone, and the guest can no longer see old progress.
     const guestMe = await call('GET', '/me', { headers: guest });

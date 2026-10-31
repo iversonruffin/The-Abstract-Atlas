@@ -18,7 +18,7 @@ import { canAccessLocation, isLocationCompleted, locationProgressPct, locationSc
 import { HOTSPOTS, LOCATIONS, Hotspot, getHotspot, getLocation } from './content.js';
 import { signGuestToken, verifyGuestToken } from './guestToken.js';
 import { Repo } from './repo.js';
-import { isCompleted, scoreAnswer, shuffledOrder } from './scoring.js';
+import { FEEDBACK_MS, isCompleted, scoreAnswer, shuffledOrder } from './scoring.js';
 import { Attempt, Caller, HotspotResult, Profile } from './types.js';
 
 export interface ApiDeps {
@@ -69,11 +69,6 @@ export function createApi(deps: ApiDeps) {
     return caller;
   }
 
-  function nameFromEmail(email: string | undefined): string {
-    const base = (email?.split('@')[0] ?? '').replace(/[^\p{L}\p{N} _.'-]/gu, '').slice(0, 20);
-    return base.length >= 2 ? base : 'Explorer';
-  }
-
   function guestName(): string {
     return `Explorer-${1000 + Math.floor(deps.rand() * 9000)}`;
   }
@@ -83,7 +78,8 @@ export function createApi(deps: ApiDeps) {
     if (existing) return existing;
     const profile: Profile = {
       playerId: caller.playerId,
-      playerName: fallbackName ?? (caller.kind === 'guest' ? guestName() : nameFromEmail(caller.email)),
+      // Never derive public names from email addresses; players can pick their own with PATCH /me.
+      playerName: fallbackName ?? guestName(),
       isGuest: caller.kind === 'guest',
       createdAt: deps.now(),
     };
@@ -257,7 +253,7 @@ export function createApi(deps: ApiDeps) {
       chosenIndex: chosenOriginal,
       correctIndex: question.correctIndex,
       timeLimitSeconds: question.timeLimitSeconds,
-      elapsedMs: deps.now() - attempt.servedAt,
+      elapsedMs: Math.max(0, deps.now() - attempt.servedAt),
     });
     attempt.correct += outcome.correct ? 1 : 0;
     attempt.score += outcome.points;
@@ -271,7 +267,7 @@ export function createApi(deps: ApiDeps) {
 
     if (attempt.questionIndex < hotspot.questions.length - 1) {
       attempt.questionIndex += 1;
-      attempt.servedAt = deps.now();
+      attempt.servedAt = deps.now() + FEEDBACK_MS;
       await repo.putAttempt(caller.playerId, attempt);
       return reply(200, { ...feedback, done: false, next: questionPayload(attempt, hotspot) });
     }
