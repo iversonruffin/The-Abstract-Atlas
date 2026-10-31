@@ -76,7 +76,10 @@ export class GameApiService {
   isLocked(locationId: string): boolean {
     if (!this.enabled) return false;
     const loc = this.locations().find((l) => l.id === locationId);
-    return loc ? !loc.accessible : false;
+    if (loc) return !loc.accessible;
+    // The server's list isn't available (still loading, or unreachable). Fail closed for guests:
+    // only the guest locations show as open. Signed-in players aren't limited.
+    return !this.auth.isSignedIn() && !APP_CONFIG.guestLocationIds.includes(locationId);
   }
 
   // ------------------------------------------------------------------ state
