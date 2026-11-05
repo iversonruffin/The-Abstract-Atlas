@@ -109,3 +109,17 @@ describe('content integrity', () => {
     }
   });
 });
+
+import { readFileSync } from 'node:fs';
+import { allowed as okNames, badShape as shapeNames, blocked as badNames } from './nameCases.js';
+
+describe('name case lists (test/nameCases.ts)', () => {
+  it('blocked names are refused', () => { for (const n of badNames) expect(() => validatePlayerName(n), n).toThrow(); });
+  it('allowed names are accepted', () => { for (const n of okNames) expect(() => validatePlayerName(n), n).not.toThrow(); });
+  it('badly shaped names are refused', () => { for (const n of shapeNames) expect(() => validatePlayerName(n), JSON.stringify(n)).toThrow(); });
+  it('the browser copy of nameRules matches the server copy', () => {
+    const a = readFileSync(new URL('../src/nameRules.ts', import.meta.url), 'utf8');
+    const b = readFileSync(new URL('../../baltimore-artifact-hunt/src/app/utils/name-rules.ts', import.meta.url), 'utf8');
+    expect(b).toBe(a);
+  });
+});

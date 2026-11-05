@@ -4,7 +4,8 @@
 // Angular already escapes anything it prints, and nothing here is ever put into HTML, a URL or a
 // query. These checks add a second layer: short lengths and a small safe alphabet.
 
-import { RegExpMatcher, englishDataset, englishRecommendedTransformers } from 'obscenity';
+import { RegExpMatcher, englishDataset, englishRecommendedTransformers, parseRawPattern } from 'obscenity';
+import { ALLOWED_WORDS, EXTRA_BLOCKED } from './name-rules';
 
 export const MAX_EMAIL = 254;
 export const MIN_PASSWORD = 8;
@@ -23,7 +24,16 @@ const CONTROL_CHARS = new RegExp(
   '[' + CONTROL_RANGES.map((r) => r.split('-').map((h) => String.fromCharCode(parseInt(h, 16))).join('-')).join('') + ']',
 );
 
-const matcher = new RegExpMatcher({ ...englishDataset.build(), ...englishRecommendedTransformers });
+// The package's English list, plus our own EXTRA_BLOCKED words and ALLOWED_WORDS exceptions (nameRules).
+const baseDataset = englishDataset.build();
+const matcher = new RegExpMatcher({
+  blacklistedTerms: [
+    ...baseDataset.blacklistedTerms,
+    ...EXTRA_BLOCKED.map((word, i) => ({ id: 100000 + i, pattern: parseRawPattern(word) })),
+  ],
+  whitelistedTerms: [...(baseDataset.whitelistedTerms ?? []), ...ALLOWED_WORDS],
+  ...englishRecommendedTransformers,
+});
 
 export function containsProfanity(text: string): boolean {
   const folded = text.normalize('NFKC');

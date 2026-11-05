@@ -7,7 +7,8 @@
 // prints them with Angular's escaping. On top of that, we only accept a small safe alphabet and
 // short lengths, so odd input is rejected before it is stored anywhere.
 
-import { RegExpMatcher, englishDataset, englishRecommendedTransformers } from 'obscenity';
+import { RegExpMatcher, englishDataset, englishRecommendedTransformers, parseRawPattern } from 'obscenity';
+import { ALLOWED_WORDS, EXTRA_BLOCKED } from './nameRules.js';
 import { HttpError } from './httpError.js';
 
 export const NAME_MIN = 2;
@@ -15,7 +16,16 @@ export const NAME_MAX = 20;
 /** Letters, numbers, space and _ . ' - only. No < > & " / \ ; = ( ) { } or control/invisible characters. */
 export const NAME_PATTERN = /^[\p{L}\p{N} _.'-]+$/u;
 
-const matcher = new RegExpMatcher({ ...englishDataset.build(), ...englishRecommendedTransformers });
+// The package's English list, plus our own EXTRA_BLOCKED words and ALLOWED_WORDS exceptions (nameRules).
+const baseDataset = englishDataset.build();
+const matcher = new RegExpMatcher({
+  blacklistedTerms: [
+    ...baseDataset.blacklistedTerms,
+    ...EXTRA_BLOCKED.map((word, i) => ({ id: 100000 + i, pattern: parseRawPattern(word) })),
+  ],
+  whitelistedTerms: [...(baseDataset.whitelistedTerms ?? []), ...ALLOWED_WORDS],
+  ...englishRecommendedTransformers,
+});
 
 /** True if the text contains a curse word or slur, including spaced-out / symbol-swapped versions. */
 export function containsProfanity(text: string): boolean {
