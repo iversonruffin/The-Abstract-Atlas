@@ -6,7 +6,8 @@
 //   word        matches anywhere, even inside other words ("ass" would also hit "Classic": avoid!)
 //   |word|      whole word only ("|ass|" matches "ass" but not "Classic")
 //   |word       must START a word      word|   must END a word
-//   w[o]rd      optional letter        wild?card   "?" makes the previous letter optional
+//   wo[r]d      [ ] = optional: matches both "word" and "wod"
+//   f?ck        ?   = any one character: matches "fuck", "fack", "f@ck" (but not "fck")
 // Matching already ignores capitals, repeated letters ("fuuuck") and look-alike symbols ("sh1t", "@ss").
 
 /** Extra things to block, on top of the package's built-in English list. */
