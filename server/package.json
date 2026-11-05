@@ -1,8 +1,8 @@
 {
-  "name": "baltimorean-map-game-server",
+  "name": "the-abstract-atlas-server",
   "version": "0.1.0",
   "private": true,
-  "description": "Serverless backend (accounts, guests, server-side scoring, leaderboards) for The Baltimorean Map Game",
+  "description": "Serverless backend (accounts, guests, server-side scoring, leaderboards) for The Abstract Atlas",
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",

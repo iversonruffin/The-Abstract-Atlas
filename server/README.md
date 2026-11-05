@@ -1,4 +1,4 @@
-# Baltimorean Map Game – Server
+# The Abstract Atlas – Server
 
 Serverless backend for accounts, guest play, server-side scoring, and leaderboards.
 

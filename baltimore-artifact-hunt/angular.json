@@ -126,7 +126,7 @@
   "builder": "angular-cli-ghpages:deploy",
   "options": {
     "dir": "dist/baltimore-artifact-hunt/browser",
-    "baseHref": "/The-Baltimorean-Map-Game/"
+    "baseHref": "/The-Abstract-Atlas/"
   }
 }
 
