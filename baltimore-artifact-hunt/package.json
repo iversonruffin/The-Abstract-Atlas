@@ -18,6 +18,7 @@
     "@angular/platform-browser": "^18.2.0",
     "@angular/platform-browser-dynamic": "^18.2.0",
     "@angular/router": "^18.2.14",
+    "animate.css": "^4.1.1",
     "parallax-js": "^3.1.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
@@ -36,5 +37,11 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "~5.5.2"
+  },
+  "allowScripts": {
+    "esbuild@0.23.0": true,
+    "esbuild@0.21.5": true,
+    "lmdb@3.0.13": true,
+    "msgpackr-extract@3.0.4": true
   }
 }
