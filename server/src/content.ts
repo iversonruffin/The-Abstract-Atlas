@@ -63,6 +63,28 @@ export const LOCATIONS: Location[] = [
     hotspotIds: ['pigtown-beacon'],
     guestAccessible: false,
   },
+  // ---- Charlotte (account-only, like every non-Federal-Hill location) ----
+  {
+    id: 'uptown',
+    name: 'Uptown',
+    tagline: "Charlotte's skyline, the Queen City's core",
+    hotspotIds: ['uptown-beacon'],
+    guestAccessible: false,
+  },
+  {
+    id: 'university',
+    name: 'University',
+    tagline: 'Campus life and University City',
+    hotspotIds: ['university-beacon'],
+    guestAccessible: false,
+  },
+  {
+    id: 'noda',
+    name: 'NoDa',
+    tagline: "Charlotte's arts district, in an old mill village",
+    hotspotIds: ['noda-beacon'],
+    guestAccessible: false,
+  },
 ];
 
 function q(id: string, prompt: string, choices: string[], correctIndex: number): Question {
@@ -122,6 +144,61 @@ export const HOTSPOTS: Hotspot[] = [
       q('pt-3', 'Livestock in old Pigtown were driven toward:', ['Slaughterhouses', 'The harbor docks', 'A racetrack', 'A church fair'], 0),
       q('pt-4', 'Pigtown is a neighborhood in which city?', ['Baltimore', 'Philadelphia', 'Richmond', 'Pittsburgh'], 0),
       q('pt-5', "Pigtown's history is most tied to which century?", ['19th century', '21st century', '17th century', '12th century'], 0),
+    ],
+  },
+  // ---- Charlotte. Trivia is a first draft: fact-check before launch (same as the Baltimore placeholders). ----
+  {
+    id: 'uptown-beacon',
+    locationId: 'uptown',
+    name: 'Uptown',
+    badge: {
+      id: 'queen-city-climber',
+      name: 'Queen City Climber',
+      icon: '🏙️',
+      description: 'Awarded for completing the Uptown challenge.',
+    },
+    questions: [
+      q('up-1', 'Charlotte is nicknamed the:', ['Queen City', 'Steel City', 'Motor City', 'Windy City'], 0),
+      q('up-2', "Charlotte was named for the wife of which British king?", ['George III', 'Henry VIII', 'Louis XIV', 'Charles II'], 0),
+      q('up-3', "Charlotte's downtown core is commonly called:", ['Uptown', 'Midtown', 'Overtown', 'Crosstown'], 0),
+      q('up-4', "The two main streets that cross at the center of Uptown are Trade Street and:", ['Tryon Street', 'Elm Street', 'Maple Street', 'Peachtree Street'], 0),
+      q('up-5', 'Charlotte is the county seat of which county?', ['Mecklenburg', 'Wake', 'Guilford', 'Durham'], 0),
+    ],
+  },
+  {
+    id: 'university-beacon',
+    locationId: 'university',
+    name: 'University',
+    badge: {
+      id: 'campus-scholar',
+      name: 'Campus Scholar',
+      icon: '🎓',
+      description: 'Awarded for completing the University challenge.',
+    },
+    questions: [
+      q('un-1', "UNC Charlotte's athletic teams are called the:", ['49ers', 'Tar Heels', 'Wolfpack', 'Blue Devils'], 0),
+      q('un-2', "The '49ers' name nods to which part of the region's history?", ['The gold rush', 'The railroad boom', 'The tobacco trade', 'The shipbuilding era'], 0),
+      q('un-3', 'UNC Charlotte began in 1946 as a college center for returning:', ['World War II veterans', 'Bank employees', 'Textile workers', 'Race car drivers'], 0),
+      q('un-4', 'The area around the campus, north of Uptown, is often called:', ['University City', 'Old Town', 'Harbor District', 'The Heights'], 0),
+      q('un-5', 'Which light rail line was extended to UNC Charlotte in 2018?', ['LYNX Blue Line', 'The Red Line', 'The Orange Line', 'The Gold Line'], 0),
+    ],
+  },
+  {
+    id: 'noda-beacon',
+    locationId: 'noda',
+    name: 'NoDa',
+    badge: {
+      id: 'noda-artist',
+      name: 'NoDa Artist',
+      icon: '🎨',
+      description: 'Awarded for completing the NoDa challenge.',
+    },
+    questions: [
+      q('nd-1', 'NoDa is short for:', ['North Davidson', 'North Dallas', 'New Downtown', 'Northern Docks'], 0),
+      q('nd-2', 'NoDa is best known as an:', ['Arts district', 'Airport district', 'Stockyard district', 'Financial district'], 0),
+      q('nd-3', "NoDa grew around a historic:", ['Textile mill village', 'Shipyard', 'Gold mine', 'Racetrack'], 0),
+      q('nd-4', "Which crop's textile industry built the mill villages around Charlotte?", ['Cotton', 'Sugar cane', 'Rice', 'Wheat'], 0),
+      q('nd-5', 'Today NoDa is popular for:', ['Galleries, breweries and live music', 'Ski slopes', 'Container ports', 'Coal plants'], 0),
     ],
   },
 ];

@@ -16,10 +16,12 @@
 import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
 import { canAccessLocation, isLocationCompleted, locationProgressPct, locationScore, locationsUnlockedBySignUp, mergeResults } from './access.js';
 import { HOTSPOTS, LOCATIONS, Hotspot, getHotspot, getLocation } from './content.js';
+import { HttpError } from './httpError.js';
 import { signGuestToken, verifyGuestToken } from './guestToken.js';
 import { Repo } from './repo.js';
 import { FEEDBACK_MS, isCompleted, scoreAnswer, shuffledOrder } from './scoring.js';
 import { Attempt, Caller, HotspotResult, Profile } from './types.js';
+import { LIMITS, assertSaneRequest, validatePlayerName } from './validation.js';
 
 export interface ApiDeps {
   repo: Repo;
@@ -31,11 +33,7 @@ export interface ApiDeps {
   verifyUserToken: (token: string) => Promise<{ sub: string; email?: string } | null>;
 }
 
-class HttpError extends Error {
-  constructor(public status: number, public code: string, message: string, public extra?: Record<string, unknown>) {
-    super(message);
-  }
-}
+// HttpError now lives in ./httpError.ts so validation.ts can share it.
 
 const reply = (status: number, body: unknown): APIGatewayProxyStructuredResultV2 => ({
   statusCode: status,
@@ -144,6 +142,7 @@ export function createApi(deps: ApiDeps) {
     const method = event.requestContext.http.method;
     const path = event.rawPath.replace(/\/+$/, '') || '/';
     const headers = event.headers as Record<string, string | undefined>;
+    assertSaneRequest(path, headers); // reject absurdly long paths / tokens before doing any work
     const caller = await resolveCaller(headers);
 
     if (method === 'POST' && path === '/guest') {
@@ -163,12 +162,8 @@ export function createApi(deps: ApiDeps) {
 
     if (method === 'PATCH' && path === '/me') {
       const c = requireCaller(caller);
-      const name = parseBody(event)['playerName'];
-      if (typeof name !== 'string') throw new HttpError(400, 'BAD_NAME', 'playerName is required.');
-      const trimmed = name.trim();
-      if (trimmed.length < 2 || trimmed.length > 20 || !/^[\p{L}\p{N} _.'-]+$/u.test(trimmed)) {
-        throw new HttpError(400, 'BAD_NAME', 'Names are 2-20 characters: letters, numbers, spaces, and _ . \' -');
-      }
+      // Length, allowed characters, and curse words / slurs are all checked in validatePlayerName.
+      const trimmed = validatePlayerName(parseBody(event)['playerName']);
       const profile = await ensureProfile(c);
       await repo.putProfile({ ...profile, playerName: trimmed });
       // Keep existing leaderboard rows in sync with the new name.
@@ -230,7 +225,9 @@ export function createApi(deps: ApiDeps) {
 
   async function answerChallenge(caller: Caller, hotspot: Hotspot, body: Record<string, unknown>) {
     const { attemptId, choiceIndex } = body;
-    if (typeof attemptId !== 'string') throw new HttpError(400, 'BAD_REQUEST', 'attemptId is required.');
+    if (typeof attemptId !== 'string' || attemptId.length > LIMITS.attemptIdMax) {
+      throw new HttpError(400, 'BAD_REQUEST', 'attemptId is required.');
+    }
     if (choiceIndex !== null && !Number.isInteger(choiceIndex)) {
       throw new HttpError(400, 'BAD_REQUEST', 'choiceIndex must be an integer, or null if time ran out.');
     }
@@ -320,7 +317,7 @@ export function createApi(deps: ApiDeps) {
       ...(caller.kind === 'guest' && locationCompleted
         ? {
             signUpPrompt: {
-              message: 'Sign up to save your badges and unlock more of Baltimore.',
+              message: 'Sign up to save your badges and unlock more places.',
               badges: earnedBadges(updated),
               unlockedLocations: locationsUnlockedBySignUp(),
             },

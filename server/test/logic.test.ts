@@ -64,3 +64,48 @@ describe('mergeResults', () => {
     expect(mergeResults(a, b)).toMatchObject({ score: 300, completed: true, badgeEarned: true, correctAnswers: 2, updatedAt: 2 });
   });
 });
+
+import { containsProfanity, validatePlayerName } from '../src/validation.js';
+import { HOTSPOTS as ALL_HOTSPOTS, LOCATIONS as ALL_LOCATIONS } from '../src/content.js';
+
+describe('player name rules', () => {
+  it('accepts normal names', () => {
+    for (const n of ['Crab Cake', "O'Malley", 'Mr. T', 'Queen_City-1', 'José']) expect(validatePlayerName(n)).toBe(n);
+  });
+  it('rejects curse words, slurs and common disguises', () => {
+    for (const n of ['shit', 'sh1t', 'f u c k', 's.h.i.t', 'b_i_t_c_h', 'n1gger', 'FUCK']) {
+      expect(() => validatePlayerName(n), n).toThrow(/offensive/);
+    }
+  });
+  it('does not block innocent look-alikes', () => {
+    for (const n of ['Scunthorpe', 'Assistant', 'Class', 'Charlotte']) expect(containsProfanity(n), n).toBe(false);
+  });
+  it('rejects markup, injection characters, control characters, and long text', () => {
+    for (const n of ['<script>alert(1)</script>', "Robert'); DROP TABLE", 'a{b}', '${x}', 'a;b', 'name\u0000x', 'zero​width', 'a'.repeat(21), '', ' ', '__', '--', '../etc'])
+      expect(() => validatePlayerName(n), JSON.stringify(n)).toThrow();
+  });
+  it('rejects non-strings', () => {
+    for (const n of [undefined, null, 5, {}, ['a'], true]) expect(() => validatePlayerName(n)).toThrow();
+  });
+});
+
+describe('content integrity', () => {
+  it('every location hotspot exists, and ids are unique', () => {
+    for (const l of ALL_LOCATIONS) for (const id of l.hotspotIds) expect(ALL_HOTSPOTS.find((h) => h.id === id)?.locationId).toBe(l.id);
+    const ids = ALL_HOTSPOTS.map((h) => h.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    const badges = ALL_HOTSPOTS.map((h) => h.badge.id);
+    expect(new Set(badges).size).toBe(badges.length);
+  });
+  it('every question has a valid correct answer and 4 distinct choices', () => {
+    for (const h of ALL_HOTSPOTS) {
+      expect(h.questions.length).toBe(5);
+      for (const q of h.questions) {
+        expect(q.choices.length).toBe(4);
+        expect(new Set(q.choices).size).toBe(4);
+        expect(q.correctIndex).toBeGreaterThanOrEqual(0);
+        expect(q.correctIndex).toBeLessThan(4);
+      }
+    }
+  });
+});

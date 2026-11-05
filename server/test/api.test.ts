@@ -76,7 +76,7 @@ describe('guest flow', () => {
     const guest = await newGuest();
     const { json } = await call('GET', '/locations', { headers: guest });
     const byId = Object.fromEntries(json.locations.map((l: any) => [l.id, l.accessible]));
-    expect(byId).toEqual({ 'federal-hill': true, 'inner-harbor': false, pigtown: false });
+    expect(byId).toEqual({ 'federal-hill': true, 'inner-harbor': false, pigtown: false, uptown: false, university: false, noda: false });
   });
 
   it('blocks guests from other locations with the list of what signing up unlocks', async () => {
@@ -84,7 +84,7 @@ describe('guest flow', () => {
     const res = await call('POST', '/challenges/inner-harbor-beacon/start', { headers: guest });
     expect(res.status).toBe(403);
     expect(res.json.error.code).toBe('LOCATION_LOCKED');
-    expect(res.json.error.unlockedBySignUp.map((l: any) => l.id)).toEqual(['inner-harbor', 'pigtown']);
+    expect(res.json.error.unlockedBySignUp.map((l: any) => l.id)).toEqual(['inner-harbor', 'pigtown', 'uptown', 'university', 'noda']);
   });
 
   it('never sends correct answers to the client when a run starts', async () => {
@@ -106,7 +106,7 @@ describe('guest flow', () => {
     const result = (await playRun(guest, 'federal-hill-beacon')).result;
     expect(result.locationCompleted).toBe(true);
     expect(result.signUpPrompt.badges.map((b: any) => b.id)).toEqual(['hilltop-adventurer']);
-    expect(result.signUpPrompt.unlockedLocations.map((l: any) => l.name)).toEqual(['Inner Harbor', 'Pigtown']);
+    expect(result.signUpPrompt.unlockedLocations.map((l: any) => l.name)).toEqual(['Inner Harbor', 'Pigtown', 'Uptown', 'University', 'NoDa']);
   });
 
   it('does not show the sign-up prompt to signed-in users', async () => {
@@ -192,6 +192,11 @@ describe('accounts and leaderboard', () => {
     await playRun(headers, 'federal-hill-beacon');
     expect((await call('PATCH', '/me', { headers, body: { playerName: 'x' } })).status).toBe(400);
     expect((await call('PATCH', '/me', { headers, body: { playerName: '<script>' } })).status).toBe(400);
+    // Curse words / slurs and over-long or markup-laden input are refused by the API itself (not just the browser).
+    expect((await call('PATCH', '/me', { headers, body: { playerName: 'sh1t' } })).status).toBe(400);
+    expect((await call('PATCH', '/me', { headers, body: { playerName: 'a'.repeat(5000) } })).status).toBe(400);
+    expect((await call('PATCH', '/me', { headers, body: { playerName: { $ne: '' } } })).status).toBe(400);
+    expect((await call('GET', '/' + 'a'.repeat(300), { headers })).status).toBe(414);
     expect((await call('PATCH', '/me', { headers, body: { playerName: 'Crab Cakes' } })).status).toBe(200);
     const board = await call('GET', '/leaderboard/federal-hill');
     expect(board.json.entries[0].playerName).toBe('Crab Cakes');
