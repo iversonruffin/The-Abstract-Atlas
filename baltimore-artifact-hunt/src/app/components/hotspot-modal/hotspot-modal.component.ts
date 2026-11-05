@@ -6,7 +6,7 @@ import { ProgressService } from '../../services/progress.service';
 import { TriviaChallengeComponent } from '../trivia-challenge/trivia-challenge.component';
 import { TriviaOnlineComponent } from '../trivia-online/trivia-online.component';
 
-type ModalView = 'guide' | 'story' | 'challenge';
+type ModalView = 'guide' | 'story' | 'challenge' | 'characters';
 
 @Component({
   selector: 'app-hotspot-modal',
@@ -35,8 +35,16 @@ export class HotspotModalComponent {
   showStory() {
     this.view = 'story';
   }
+  showCharacters() {
+    this.view = 'characters';
+  }
   showChallenge() {
     this.view = 'challenge';
+  }
+
+  /** First letter(s) shown in place of a photo until one is uploaded. */
+  initials(name: string): string {
+    return name.replace(/[^\p{L}\p{N} ]/gu, '').trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
   }
 
   close() {

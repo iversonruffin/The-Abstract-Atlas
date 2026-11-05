@@ -31,6 +31,16 @@ export interface HotspotStory {
   footer?: string;
 }
 
+/** A person from a location's lore: a picture and a short story about who they are. */
+export interface Character {
+  id: string;
+  name: string;
+  /** Image path under public/ (e.g. 'images/characters/jesus-saves-guy.jpg'). Omit until the photo is uploaded. */
+  photo?: string;
+  /** Short story about who they are. */
+  story: string;
+}
+
 export type ChallengeType = 'trivia' | 'mini-game';
 
 export interface Hotspot {
@@ -46,16 +56,22 @@ export interface Hotspot {
   challengeType: ChallengeType;
   triviaQuestions?: TriviaQuestion[];
   badge: Badge;
+  /** People of this place (lore). Optional: the guide shows "coming soon" when empty. */
+  characters?: Character[];
   /** Hotspot ids that must be completed before this one unlocks. Empty = unlocked from the start. */
   unlockRequires: string[];
   /** Position of the beacon within the parallax scene, as % of scene width/height. */
   position: { xPct: number; yPct: number };
+  /** Where this place's house sits in its CITY's scene (the city page shows every location's house). */
+  cityPosition?: { xPct: number; yPct: number };
 }
 
 export interface CityLocation {
   id: string;
   name: string;
   tagline: string;
+  /** Which city this location belongs to (see CITIES). */
+  cityId?: string;
   /** 0-1 completion percentage, derived at runtime from hotspot progress. */
   hotspotIds: string[];
 }
@@ -75,4 +91,12 @@ export interface PlayerHotspotResult {
   /** Sum of per-question time-based points. */
   score: number;
   badgeEarned: boolean;
+}
+
+/** A city on the home page. Clicking it opens its parallax scene, with one house per location. */
+export interface City {
+  id: string;
+  name: string;
+  tagline: string;
+  locationIds: string[];
 }

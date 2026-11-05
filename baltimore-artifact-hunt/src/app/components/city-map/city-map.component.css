@@ -99,3 +99,29 @@
   color: #ffd65c;
   opacity: 1;
 }
+
+/* ---- Home page: cities + achievements shelf (added) ---- */
+.city-grid {
+  max-width: 900px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+}
+.city-card {
+  padding: 28px;
+}
+.city-card h2 {
+  font-size: 26px;
+}
+.city-card .unlock-note {
+  font-weight: bold;
+  color: #ffd65c;
+  opacity: 1;
+  margin: 0 0 12px;
+}
+.badge-pill.badge-unearned {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+  opacity: 0.6;
+}

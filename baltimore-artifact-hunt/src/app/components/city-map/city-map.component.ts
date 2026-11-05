@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { CityLocation } from '../../models/game.models';
+import { Badge, City, CityLocation } from '../../models/game.models';
 import { AuthUiService } from '../../services/auth-ui.service';
 import { GameApiService } from '../../services/game-api.service';
 import { GameDataService } from '../../services/game-data.service';
@@ -17,6 +17,10 @@ import { ProgressBarComponent } from '../progress-bar/progress-bar.component';
 })
 export class CityMapComponent {
   locations: CityLocation[];
+  /** Home page now lists cities (Charlotte, Baltimore); each opens its own parallax scene. */
+  cities: City[];
+  /** Every badge in the game, so unearned ones can show as placeholders on the achievements shelf. */
+  allBadges: Badge[];
 
   constructor(
     private gameData: GameDataService,
@@ -25,6 +29,8 @@ export class CityMapComponent {
     private authUi: AuthUiService,
   ) {
     this.locations = this.gameData.getLocations();
+    this.cities = this.gameData.getCities();
+    this.allBadges = this.gameData.getAllBadges();
   }
 
   /** Online mode: guests see account-only locations as locked. Always false offline. */
@@ -34,5 +40,14 @@ export class CityMapComponent {
 
   promptSignUp(locationName: string) {
     this.authUi.show('signup', `Sign up to unlock ${locationName}.`);
+  }
+
+  isBadgeEarned(badgeId: string): boolean {
+    return this.progress.earnedBadges().some((b) => b.id === badgeId);
+  }
+
+  /** True when a guest can't open ANY of the city's locations (they can still look around the city). */
+  isCityLocked(city: City): boolean {
+    return city.locationIds.every((id) => this.api.isLocked(id));
   }
 }

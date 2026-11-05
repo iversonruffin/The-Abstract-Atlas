@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthError, AuthService } from '../../services/auth.service';
 import { AuthMode, AuthUiService } from '../../services/auth-ui.service';
 import { GameApiService } from '../../services/game-api.service';
+import { MAX_EMAIL, MAX_PASSWORD, checkConfirmCode, checkEmail, checkLoginPassword, checkPassword, checkPlayerName } from '../../utils/input-guard';
 
 const NAME_PATTERN = /^[\p{L}\p{N} _.'-]{2,20}$/u;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -25,13 +26,13 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           <div class="auth-kicker">Save your progress</div>
           <h2 id="auth-title">Create your account</h2>
           <label>Email
-            <input type="email" name="email" [(ngModel)]="email" autocomplete="email" required />
+            <input type="email" name="email" [(ngModel)]="email" autocomplete="email" [attr.maxlength]="maxEmail" required />
           </label>
           <label>Player name <span class="hint">(shown on leaderboards)</span>
             <input type="text" name="name" [(ngModel)]="name" maxlength="20" autocomplete="nickname" required />
           </label>
           <label>Password
-            <input type="password" name="password" [(ngModel)]="password" autocomplete="new-password" required />
+            <input type="password" name="password" [(ngModel)]="password" autocomplete="new-password" [attr.maxlength]="maxPassword" required />
             <span class="hint">8+ characters with a lowercase letter and a number.</span>
           </label>
           <p class="auth-error" *ngIf="error">{{ error }}</p>
@@ -62,10 +63,10 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           <div class="auth-kicker">Welcome back</div>
           <h2 id="auth-title">Log in</h2>
           <label>Email
-            <input type="email" name="email" [(ngModel)]="email" autocomplete="email" required />
+            <input type="email" name="email" [(ngModel)]="email" autocomplete="email" [attr.maxlength]="maxEmail" required />
           </label>
           <label>Password
-            <input type="password" name="password" [(ngModel)]="password" autocomplete="current-password" required />
+            <input type="password" name="password" [(ngModel)]="password" autocomplete="current-password" [attr.maxlength]="maxPassword" required />
           </label>
           <p class="auth-info ok" *ngIf="info">{{ info }}</p>
           <p class="auth-error" *ngIf="error">{{ error }}</p>
@@ -215,6 +216,8 @@ export class AuthModalComponent {
   name = '';
   code = '';
   busy = false;
+  readonly maxEmail = MAX_EMAIL;
+  readonly maxPassword = MAX_PASSWORD;
   error = '';
   info = '';
 
@@ -246,6 +249,9 @@ export class AuthModalComponent {
 
   async submitSignUp() {
     this.error = '';
+    // Stricter checks (length caps, safe characters, no curse words) come first; the originals below still apply.
+    const guard = checkEmail(this.email) || checkPlayerName(this.name) || checkPassword(this.password);
+    if (guard) return this.fail(guard);
     if (!EMAIL_PATTERN.test(this.email.trim())) return this.fail('Please enter a valid email address.');
     if (!NAME_PATTERN.test(this.name.trim())) {
       return this.fail("Player names are 2–20 characters: letters, numbers, spaces, and _ . ' -");
@@ -263,7 +269,7 @@ export class AuthModalComponent {
 
   async submitConfirm() {
     this.error = '';
-    if (!/^\d{6}$/.test(this.code.trim())) return this.fail('Enter the 6-digit code from the email.');
+    if (checkConfirmCode(this.code)) return this.fail(checkConfirmCode(this.code));
     await this.run(async () => {
       await this.auth.confirm(this.email, this.code);
       if (this.password) {
@@ -279,6 +285,7 @@ export class AuthModalComponent {
 
   async submitLogin() {
     this.error = '';
+    if (checkEmail(this.email) || checkLoginPassword(this.password)) return this.fail('Enter your email and password.');
     if (!EMAIL_PATTERN.test(this.email.trim()) || !this.password) return this.fail('Enter your email and password.');
     await this.run(async () => {
       try {
@@ -299,6 +306,7 @@ export class AuthModalComponent {
   async resend(event: Event) {
     event.preventDefault();
     this.error = '';
+    if (checkEmail(this.email)) return this.fail('Enter your email first.');
     if (!EMAIL_PATTERN.test(this.email.trim())) return this.fail('Enter your email first.');
     await this.run(async () => {
       await this.auth.resendCode(this.email);

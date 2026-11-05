@@ -77,6 +77,13 @@ export class ProgressService {
     return Math.round((completed / hotspots.length) * 100);
   }
 
+  /** 0-100 completion for a whole city: average of its locations' completion. */
+  getCityProgressPct(cityId: string): number {
+    const locations = this.gameData.getLocationsForCity(cityId);
+    if (locations.length === 0) return 0;
+    return Math.round(locations.reduce((sum, l) => sum + this.getLocationProgressPct(l.id), 0) / locations.length);
+  }
+
   /** Records the outcome of a trivia/mini-game challenge and updates badges/leaderboard. */
   recordHotspotResult(hotspotId: string, correctAnswers: number, totalQuestions: number, score: number) {
     const completed = totalQuestions === 0 || correctAnswers > 0;

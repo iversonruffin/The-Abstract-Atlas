@@ -19,8 +19,8 @@
           class="beacon"
           [class.locked]="!isUnlocked(hotspot)"
           [class.completed]="isCompleted(hotspot)"
-          [style.left.%]="hotspot.position.xPct"
-          [style.bottom.%]="100 - hotspot.position.yPct"
+          [style.left.%]="housePosition(hotspot).xPct"
+          [style.bottom.%]="100 - housePosition(hotspot).yPct"
           tabindex="0"
           role="button"
           [attr.aria-label]="'Open ' + hotspot.name"
@@ -51,22 +51,32 @@
   </div>
 
   <div id="top-bar">
-    <a routerLink="/" id="back-link">‹ City Map</a>
+    <a routerLink="/" id="back-link">‹ {{ city ? 'Home' : 'City Map' }}</a>
     <div id="location-heading">
       <h1>{{ location.name }}</h1>
-      <app-progress-bar [pct]="progress.getLocationProgressPct(location.id)"></app-progress-bar>
+      <app-progress-bar [pct]="headingProgressPct()"></app-progress-bar>
     </div>
     <button id="leaderboard-toggle" (click)="toggleLeaderboard()">🏅 Leaderboard</button>
   </div>
 
   <div id="leaderboard-panel" *ngIf="leaderboardVisible">
-    <app-leaderboard *ngIf="!api.enabled" [locationId]="location.id"></app-leaderboard>
-    <app-leaderboard-online *ngIf="api.enabled" [locationId]="location.id"></app-leaderboard-online>
+    <!-- City scene: pick which of the city's locations to show. -->
+    <div class="board-tabs" *ngIf="city">
+      <button type="button" *ngFor="let l of cityLocations" [class.on]="l.id === leaderboardLocationId" (click)="leaderboardLocationId = l.id">{{ l.name }}</button>
+    </div>
+    <app-leaderboard *ngIf="!api.enabled" [locationId]="boardLocationId"></app-leaderboard>
+    <app-leaderboard-online *ngIf="api.enabled" [locationId]="boardLocationId"></app-leaderboard-online>
   </div>
 
-  <h2 id="hint" [style.opacity]="hintVisible ? 1 : 0">Hover a beacon, then click it to explore</h2>
+  <h2 id="hint" [style.opacity]="hintVisible ? 1 : 0">
+    {{ isTouch ? (city ? 'Tap a house to explore. Tilt your phone to look around.' : 'Tap a beacon to explore. Tilt your phone to look around.') : (city ? 'Hover a house, then click it to explore' : 'Hover a beacon, then click it to explore') }}
+  </h2>
 
-  <div id="player">
+  <!-- iOS asks permission before a page may read motion sensors; it has to come from a tap. -->
+  <button id="tilt-button" type="button" *ngIf="needsTiltPermission && !tiltEnabled" (click)="enableTilt()">📱 Enable tilt</button>
+  <p id="tilt-denied" *ngIf="tiltDenied">Motion access was blocked. Allow "Motion &amp; Orientation" for this site in Safari settings to use tilt.</p>
+
+  <div id="player" *ngIf="!isTouch">
     <img src="images/bird.png" alt="" />
   </div>
 

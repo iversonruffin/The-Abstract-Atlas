@@ -29,6 +29,18 @@
         <span class="story-arrow">›</span>
       </div>
 
+      <!-- People of this place: a picture and a short story each. -->
+      <div id="characters-item" tabindex="0" role="button" (click)="showCharacters()" (keydown.enter)="showCharacters()">
+        <span class="story-icon">👥</span>
+        <div class="story-text">
+          <div class="story-title">People of {{ hotspot.name }}</div>
+          <div class="story-sub">
+            {{ hotspot.characters?.length ? hotspot.characters!.length + (hotspot.characters!.length === 1 ? ' character' : ' characters') + ' — tap to meet them' : 'Coming soon' }}
+          </div>
+        </div>
+        <span class="story-arrow">›</span>
+      </div>
+
       <button id="start-challenge" *ngIf="!progress.isHotspotCompleted(hotspot.id)" (click)="showChallenge()">
         Start Challenge
       </button>
@@ -46,6 +58,22 @@
       <h2>{{ hotspot.story.title }}</h2>
       <p>{{ hotspot.story.body }}</p>
       <p class="story-footer" *ngIf="hotspot.story.footer">{{ hotspot.story.footer }}</p>
+    </div>
+
+    <!-- Characters view -->
+    <div id="characters-view" *ngIf="view === 'characters'">
+      <button id="story-back" (click)="showGuide()">‹ Back to guide</button>
+      <div class="modal-kicker">Characters</div>
+      <h2>People of {{ hotspot.name }}</h2>
+      <p class="no-characters" *ngIf="!hotspot.characters?.length">The people of {{ hotspot.name }} are coming soon.</p>
+      <article class="character" *ngFor="let c of hotspot.characters">
+        <img *ngIf="c.photo; else noPhoto" class="character-photo" [src]="c.photo" [alt]="'Photo of ' + c.name" loading="lazy" />
+        <ng-template #noPhoto><div class="character-photo character-photo-empty" aria-hidden="true">👤</div></ng-template>
+        <div class="character-text">
+          <h3>{{ c.name }}</h3>
+          <p>{{ c.story }}</p>
+        </div>
+      </article>
     </div>
 
     <!-- Challenge view -->

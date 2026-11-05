@@ -11,7 +11,7 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 import Parallax from 'parallax-js';
-import { CityLocation, Hotspot } from '../../models/game.models';
+import { City, CityLocation, Hotspot } from '../../models/game.models';
 import { AuthUiService } from '../../services/auth-ui.service';
 import { GameApiService } from '../../services/game-api.service';
 import { GameDataService } from '../../services/game-data.service';
@@ -33,6 +33,18 @@ export class LocationSceneComponent implements OnInit, AfterViewInit, OnDestroy 
   @ViewChild('zoomWrapEl') zoomWrapEl!: ElementRef<HTMLElement>;
 
   location?: CityLocation;
+  /** Set on /city/:cityId. The scene then shows one house per location in that city. */
+  city?: City;
+  /** Locations of the open city, for the leaderboard's location picker. */
+  cityLocations: CityLocation[] = [];
+  /** Which location's leaderboard is showing (city scene only). */
+  leaderboardLocationId = '';
+  /** Phones/tablets: no bird cursor; tilt the device to move the scene instead. */
+  isTouch = false;
+  /** iOS only: tilt needs a one-time permission tap. */
+  needsTiltPermission = false;
+  tiltEnabled = false;
+  tiltDenied = false;
   hotspots: Hotspot[] = [];
   activeHotspot: Hotspot | null = null;
   modalActive = false;
@@ -51,6 +63,26 @@ export class LocationSceneComponent implements OnInit, AfterViewInit, OnDestroy 
   ) {}
 
   ngOnInit() {
+    this.isTouch = typeof window !== 'undefined' && window.matchMedia?.('(hover: none) and (pointer: coarse)').matches === true;
+    this.needsTiltPermission =
+      this.isTouch && typeof (window as any).DeviceOrientationEvent?.requestPermission === 'function';
+
+    // City scene (/city/:cityId): a synthetic "location" stands in for the city so the heading works,
+    // and the houses are every hotspot of the city's locations.
+    const cityId = this.route.snapshot.paramMap.get('cityId');
+    if (cityId) {
+      this.city = this.gameData.getCity(cityId);
+      if (!this.city) {
+        this.router.navigate(['/']);
+        return;
+      }
+      this.cityLocations = this.gameData.getLocationsForCity(cityId);
+      this.leaderboardLocationId = this.cityLocations[0]?.id ?? '';
+      this.location = { id: this.city.id, name: this.city.name, tagline: this.city.tagline, hotspotIds: [] };
+      this.hotspots = this.gameData.getHotspotsForCity(cityId);
+      return;
+    }
+
     const locationId = this.route.snapshot.paramMap.get('locationId') ?? '';
     this.location = this.gameData.getLocation(locationId);
     this.hotspots = this.gameData.getHotspotsForLocation(locationId);
@@ -74,11 +106,21 @@ export class LocationSceneComponent implements OnInit, AfterViewInit, OnDestroy 
 
   ngAfterViewInit() {
     if (!this.sceneEl) return;
+    this.startParallax();
+  }
+
+  /**
+   * Starts the parallax. On a phone, parallax-js follows the gyroscope; calibrating makes "the way you're
+   * holding it now" the middle, so tilting from there moves the scene. Android works right away.
+   * iOS needs enableTilt() first (a user tap), and the instance is rebuilt after permission is given.
+   */
+  private startParallax() {
+    this.parallaxInstance?.destroy?.();
     this.parallaxInstance = new (Parallax as any)(this.sceneEl.nativeElement, {
       relativeInput: false,
       hoverOnly: false,
-      calibrateX: false,
-      calibrateY: false,
+      calibrateX: this.isTouch,
+      calibrateY: this.isTouch,
       invertX: true,
       invertY: true,
       limitX: 60,
@@ -88,18 +130,52 @@ export class LocationSceneComponent implements OnInit, AfterViewInit, OnDestroy 
     this.parallaxInstance.scalar(9.0, 6.0);
   }
 
+  /** "Enable tilt" button (iOS 13+ asks permission for motion sensors, and only from a tap). */
+  async enableTilt() {
+    this.tiltDenied = false;
+    try {
+      const requests = [(window as any).DeviceOrientationEvent, (window as any).DeviceMotionEvent]
+        .filter((E) => typeof E?.requestPermission === 'function')
+        .map((E) => E.requestPermission() as Promise<string>);
+      const answers = await Promise.all(requests);
+      if (answers.some((a) => a !== 'granted')) throw new Error('denied');
+      this.tiltEnabled = true;
+      this.startParallax(); // rebuild so it starts listening now that events will arrive
+    } catch {
+      this.tiltDenied = true;
+    }
+  }
+
   ngOnDestroy() {
     this.parallaxInstance?.destroy?.();
   }
 
   @HostListener('window:mousemove', ['$event'])
   onMouseMove(e: MouseEvent) {
+    if (this.isTouch) return; // no bird cursor on phones
     const player = document.getElementById('player');
     if (player) player.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
   }
 
   isUnlocked(hotspot: Hotspot): boolean {
-    return this.progress.isHotspotUnlocked(hotspot.id);
+    // Also locked when the server says this location needs an account (guests: Federal Hill only).
+    return this.progress.isHotspotUnlocked(hotspot.id) && !this.api.isLocked(hotspot.locationId);
+  }
+
+  /** House position: in the city scene every location's house has its own spot. */
+  housePosition(hotspot: Hotspot) {
+    return this.city ? hotspot.cityPosition ?? hotspot.position : hotspot.position;
+  }
+
+  /** Heading progress: whole-city average in the city scene, otherwise the location's own. */
+  headingProgressPct(): number {
+    if (!this.location) return 0;
+    return this.city ? this.progress.getCityProgressPct(this.city.id) : this.progress.getLocationProgressPct(this.location.id);
+  }
+
+  /** Which location the leaderboard panel shows. */
+  get boardLocationId(): string {
+    return this.city ? this.leaderboardLocationId : this.location?.id ?? '';
   }
 
   isCompleted(hotspot: Hotspot): boolean {
@@ -107,6 +183,11 @@ export class LocationSceneComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   openHotspot(hotspot: Hotspot) {
+    if (this.api.isLocked(hotspot.locationId)) {
+      const loc = this.gameData.getLocation(hotspot.locationId);
+      this.authUi.show('signup', `Sign up to unlock ${loc?.name ?? hotspot.name}.`);
+      return;
+    }
     if (!this.isUnlocked(hotspot)) return;
 
     const beaconEl = document.getElementById('beacon-' + hotspot.id);

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { CITY_LOCATIONS, HOTSPOTS } from '../data/game-data';
-import { CityLocation, Hotspot } from '../models/game.models';
+import { CITIES, CITY_LOCATIONS, HOTSPOTS } from '../data/game-data';
+import { Badge, City, CityLocation, Hotspot } from '../models/game.models';
 
 @Injectable({ providedIn: 'root' })
 export class GameDataService {
@@ -21,5 +21,28 @@ export class GameDataService {
 
   getHotspot(hotspotId: string): Hotspot | undefined {
     return this.hotspots.find((h) => h.id === hotspotId);
+  }
+
+  // --- Cities (home page -> city scene) ---------------------------------------
+  getCities(): City[] {
+    return CITIES;
+  }
+
+  getCity(cityId: string): City | undefined {
+    return CITIES.find((c) => c.id === cityId);
+  }
+
+  getLocationsForCity(cityId: string): CityLocation[] {
+    return this.locations.filter((l) => l.cityId === cityId);
+  }
+
+  /** Every house in a city's scene, in location order. */
+  getHotspotsForCity(cityId: string): Hotspot[] {
+    return this.getLocationsForCity(cityId).flatMap((l) => this.getHotspotsForLocation(l.id));
+  }
+
+  /** All badges in the game (earned or not), for the home page's achievements shelf. Charlotte first, like the cities. */
+  getAllBadges(): Badge[] {
+    return CITIES.flatMap((c) => this.getHotspotsForCity(c.id)).map((h) => h.badge);
   }
 }

@@ -408,3 +408,85 @@
   font-weight: normal;
   transition: opacity 0.4s ease;
 }
+
+/* ---- City scene + phone support (added) ---- */
+#leaderboard-panel .board-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 10px 10px 0;
+  flex-wrap: wrap;
+}
+#leaderboard-panel .board-tabs button {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: transparent;
+  color: #fff;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+#leaderboard-panel .board-tabs button.on {
+  background: #ffd65c;
+  color: #1b2a38;
+  border-color: #ffd65c;
+}
+
+#tilt-button {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 20;
+  border: none;
+  border-radius: 999px;
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: bold;
+  background: #ffd65c;
+  color: #1b2a38;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+#tilt-denied {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 80px;
+  z-index: 20;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(10, 28, 44, 0.9);
+  color: #fff;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* Phones: the bird cursor is hidden, and the top bar wraps instead of overflowing. */
+@media (hover: none) and (pointer: coarse) {
+  #player {
+    display: none;
+  }
+  #top-bar {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+  #location-heading {
+    flex: 1 1 100%;
+    max-width: none;
+    order: 3;
+  }
+  #leaderboard-panel {
+    right: 14px;
+    left: 14px;
+    width: auto;
+    top: 110px;
+  }
+  #hint {
+    top: auto;
+    bottom: 84px;
+    width: calc(100% - 32px);
+    text-align: center;
+    font-size: 14px;
+  }
+}
