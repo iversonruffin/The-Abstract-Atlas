@@ -10,17 +10,18 @@ import { CityLocation, Hotspot } from '../models/game.models';
 // ---------------------------------------------------------------------------
 
 export const CITY_LOCATIONS: CityLocation[] = [
-  {
-    id: 'inner-harbor',
-    name: 'Inner Harbor',
-    tagline: "Baltimore's historic waterfront heart",
-    hotspotIds: ['inner-harbor-beacon'],
-  },
+  // Federal Hill is the first open location (guests can play it), so it is listed first on the map.
   {
     id: 'federal-hill',
     name: 'Federal Hill',
     tagline: 'Rowhouses, a hilltop park, and harbor views',
     hotspotIds: ['federal-hill-beacon'],
+  },
+  {
+    id: 'inner-harbor',
+    name: 'Inner Harbor',
+    tagline: "Baltimore's historic waterfront heart",
+    hotspotIds: ['inner-harbor-beacon'],
   },
   {
     id: 'pigtown',

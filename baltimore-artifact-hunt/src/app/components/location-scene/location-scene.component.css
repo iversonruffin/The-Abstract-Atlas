@@ -362,6 +362,37 @@
   width: 240px;
 }
 
+/* Darker, nearly opaque leaderboard so the text stays legible over the clouds and water.
+   The ::ng-deep rules restyle the text inside both leaderboard components (online + original). */
+#leaderboard-panel {
+  background: rgba(10, 28, 44, 0.96);
+  border: 2px solid rgba(255, 214, 92, 0.45);
+  border-radius: 14px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  color: #fff;
+}
+#leaderboard-panel ::ng-deep .leaderboard {
+  background: transparent;
+  border: none;
+}
+#leaderboard-panel ::ng-deep .leaderboard h3 {
+  color: #ffd65c;
+}
+#leaderboard-panel ::ng-deep .leaderboard li {
+  color: #fff;
+}
+#leaderboard-panel ::ng-deep .leaderboard li.me {
+  background: rgba(255, 214, 92, 0.18);
+}
+#leaderboard-panel ::ng-deep .leaderboard .empty-state,
+#leaderboard-panel ::ng-deep .leaderboard .guest-hint {
+  color: #fff;
+  opacity: 0.85;
+}
+#leaderboard-panel ::ng-deep .leaderboard a {
+  color: #ffd65c;
+}
+
 #hint {
   position: absolute;
   top: 70px;
