@@ -27,6 +27,31 @@ const ATTEMPT_TTL_SECONDS = 60 * 60;
 const pk = (playerId: string) => `PLAYER#${playerId}`;
 const nowSeconds = () => Math.floor(Date.now() / 1000);
 
+// Items come back from DynamoDB with storage fields attached (PK, SK, ttl, GSI keys). These readers
+// return ONLY the real fields, so a result read from one player can be safely written to another.
+// (Without this, copying a guest's results to a new account re-used the guest's PK and the data
+// was deleted along with the guest.)
+function toResult(i: Record<string, unknown>): HotspotResult {
+  return {
+    hotspotId: String(i['hotspotId']),
+    completed: Boolean(i['completed']),
+    correctAnswers: Number(i['correctAnswers']),
+    totalQuestions: Number(i['totalQuestions']),
+    score: Number(i['score']),
+    badgeEarned: Boolean(i['badgeEarned']),
+    updatedAt: Number(i['updatedAt']),
+  };
+}
+
+function toProfile(i: Record<string, unknown>): Profile {
+  return {
+    playerId: String(i['playerId']),
+    playerName: String(i['playerName']),
+    isGuest: Boolean(i['isGuest']),
+    createdAt: Number(i['createdAt']),
+  };
+}
+
 export class DynamoRepo implements Repo {
   private readonly db: DynamoDBDocumentClient;
 
@@ -38,28 +63,39 @@ export class DynamoRepo implements Repo {
 
   async getProfile(playerId: string): Promise<Profile | undefined> {
     const out = await this.db.send(new GetCommand({ TableName: this.tableName, Key: { PK: pk(playerId), SK: 'PROFILE' } }));
-    return out.Item ? (out.Item as unknown as Profile) : undefined;
+    return out.Item ? toProfile(out.Item) : undefined;
   }
 
   async putProfile(profile: Profile): Promise<void> {
     await this.db.send(
       new PutCommand({
         TableName: this.tableName,
-        Item: { PK: pk(profile.playerId), SK: 'PROFILE', ...profile, ...(profile.isGuest ? { ttl: nowSeconds() + GUEST_TTL_SECONDS } : {}) },
+        // Keys are written LAST so nothing spread into the item can override them.
+        Item: {
+          ...toProfile(profile as unknown as Record<string, unknown>),
+          ...(profile.isGuest ? { ttl: nowSeconds() + GUEST_TTL_SECONDS } : {}),
+          PK: pk(profile.playerId),
+          SK: 'PROFILE',
+        },
       }),
     );
   }
 
   async getResults(playerId: string): Promise<HotspotResult[]> {
     const items = await this.queryPlayer(playerId, 'RESULT#');
-    return items.map((i) => i as unknown as HotspotResult);
+    return items.map(toResult);
   }
 
   async putResult(playerId: string, result: HotspotResult, isGuest: boolean): Promise<void> {
     await this.db.send(
       new PutCommand({
         TableName: this.tableName,
-        Item: { PK: pk(playerId), SK: `RESULT#${result.hotspotId}`, ...result, ...(isGuest ? { ttl: nowSeconds() + GUEST_TTL_SECONDS } : {}) },
+        Item: {
+          ...toResult(result as unknown as Record<string, unknown>),
+          ...(isGuest ? { ttl: nowSeconds() + GUEST_TTL_SECONDS } : {}),
+          PK: pk(playerId),
+          SK: `RESULT#${result.hotspotId}`,
+        },
       }),
     );
   }
@@ -78,7 +114,7 @@ export class DynamoRepo implements Repo {
     await this.db.send(
       new PutCommand({
         TableName: this.tableName,
-        Item: { PK: pk(playerId), SK: `ATTEMPT#${attempt.hotspotId}`, ...attempt, ttl: nowSeconds() + ATTEMPT_TTL_SECONDS },
+        Item: { ...attempt, ttl: nowSeconds() + ATTEMPT_TTL_SECONDS, PK: pk(playerId), SK: `ATTEMPT#${attempt.hotspotId}` },
       }),
     );
   }
