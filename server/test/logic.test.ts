@@ -99,7 +99,8 @@ describe('content integrity', () => {
   });
   it('every question has a valid correct answer and 4 distinct choices', () => {
     for (const h of ALL_HOTSPOTS) {
-      expect(h.questions.length).toBe(5);
+      // Question counts vary per location now (Ridgely's has 4, Uptown 7); every challenge needs at least 3.
+      expect(h.questions.length).toBeGreaterThanOrEqual(3);
       for (const q of h.questions) {
         expect(q.choices.length).toBe(4);
         expect(new Set(q.choices).size).toBe(4);

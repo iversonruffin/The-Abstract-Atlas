@@ -76,16 +76,16 @@ describe('guest -> account claim against the real DynamoRepo', () => {
       return { status: res.statusCode, json: JSON.parse(res.body) as any };
     };
 
-    // Guest plays Federal Hill perfectly.
+    // Guest plays Ridgely's (the guest location) perfectly.
     const guest = { 'x-guest-token': (await call('POST', '/guest')).json.guestToken as string };
-    const hotspot = getHotspot('federal-hill-beacon')!;
-    const start = await call('POST', '/challenges/federal-hill-beacon/start', guest);
+    const hotspot = getHotspot('ridgelys-beacon')!;
+    const start = await call('POST', '/challenges/ridgelys-beacon/start', guest);
     let question = start.json.question;
     for (let i = 0; i < hotspot.questions.length; i++) {
       const original = hotspot.questions.find((q) => q.id === question.id)!;
       const choiceIndex = question.choices.indexOf(original.choices[original.correctIndex]);
       clock += 2000;
-      const res = await call('POST', '/challenges/federal-hill-beacon/answer', guest, { attemptId: start.json.attemptId, choiceIndex });
+      const res = await call('POST', '/challenges/ridgelys-beacon/answer', guest, { attemptId: start.json.attemptId, choiceIndex });
       question = res.json.next;
     }
 
@@ -94,16 +94,16 @@ describe('guest -> account claim against the real DynamoRepo', () => {
     const claim = await call('POST', '/account/claim', { ...user, ...guest });
     expect(claim.status).toBe(200);
     expect(claim.json.claimed).toBe(1);
-    expect(claim.json.badges.map((b: any) => b.id)).toEqual(['hilltop-adventurer']);
+    expect(claim.json.badges.map((b: any) => b.id)).toEqual(['delight-seeker']);
 
     // It sticks: a fresh request as the account still has the badge and score.
     const me = await call('GET', '/me', user);
     expect(me.json.results).toHaveLength(1);
-    expect(me.json.results[0]).toMatchObject({ hotspotId: 'federal-hill-beacon', completed: true, badgeEarned: true, score: 900 });
-    expect(doc.items.get(doc.key('PLAYER#user-1', 'RESULT#federal-hill-beacon'))?.['ttl']).toBeUndefined();
+    expect(me.json.results[0]).toMatchObject({ hotspotId: 'ridgelys-beacon', completed: true, badgeEarned: true, score: hotspot.questions.length * 180 });
+    expect(doc.items.get(doc.key('PLAYER#user-1', 'RESULT#ridgelys-beacon'))?.['ttl']).toBeUndefined();
 
-    const board = await call('GET', '/leaderboard/federal-hill');
+    const board = await call('GET', '/leaderboard/ridgelys');
     expect(board.json.entries).toHaveLength(1);
-    expect(board.json.entries[0].score).toBe(900);
+    expect(board.json.entries[0].score).toBe(hotspot.questions.length * 180);
   });
 });

@@ -107,7 +107,8 @@ export function createApi(deps: ApiDeps) {
       name: l.name,
       tagline: l.tagline,
       hotspotIds: l.hotspotIds,
-      accessible: caller ? canAccessLocation(caller, l) : l.guestAccessible,
+      accessible: caller ? canAccessLocation(caller, l) : l.guestAccessible && !l.comingSoon,
+      comingSoon: !!l.comingSoon,
       progressPct: locationProgressPct(l.id, results),
       completed: isLocationCompleted(l.id, results),
     }));

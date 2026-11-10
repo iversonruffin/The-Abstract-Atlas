@@ -91,7 +91,13 @@ export class LocationSceneComponent implements OnInit, AfterViewInit, OnDestroy 
       this.router.navigate(['/']);
     }
 
-    // Online mode: guests can only open Federal Hill. If someone lands here directly
+    // Coming-soon locations can't be opened by anyone yet; a direct link goes back to the map.
+    if (this.location?.comingSoon) {
+      this.router.navigate(['/']);
+      return;
+    }
+
+    // Online mode: guests can only open Ridgely's and Uptown. If someone lands here directly
     // (e.g. a QR code or a typed URL), send them back and offer sign-up.
     if (this.api.enabled && this.location) {
       const name = this.location.name;
@@ -158,8 +164,14 @@ export class LocationSceneComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   isUnlocked(hotspot: Hotspot): boolean {
-    // Also locked when the server says this location needs an account (guests: Federal Hill only).
+    // Also locked when the server says this location needs an account (guests: Ridgely's and Uptown only).
+    if (this.isComingSoon(hotspot)) return false;
     return this.progress.isHotspotUnlocked(hotspot.id) && !this.api.isLocked(hotspot.locationId);
+  }
+
+  /** Coming-soon houses show on the map but can't be opened by anyone yet. */
+  isComingSoon(hotspot: Hotspot): boolean {
+    return this.gameData.isComingSoon(hotspot.locationId);
   }
 
   /** House position: in the city scene every location's house has its own spot. */
@@ -183,6 +195,7 @@ export class LocationSceneComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   openHotspot(hotspot: Hotspot) {
+    if (this.isComingSoon(hotspot)) return; // nothing to open yet, for guests or accounts
     if (this.api.isLocked(hotspot.locationId)) {
       const loc = this.gameData.getLocation(hotspot.locationId);
       this.authUi.show('signup', `Sign up to unlock ${loc?.name ?? hotspot.name}.`);

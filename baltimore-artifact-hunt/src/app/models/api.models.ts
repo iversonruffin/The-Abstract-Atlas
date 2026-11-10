@@ -10,8 +10,10 @@ export interface UnlockableLocation {
 
 export interface LocationView extends UnlockableLocation {
   hotspotIds: string[];
-  /** False for guests on locations that need an account. */
+  /** False for guests on locations that need an account, and for everyone on coming-soon locations. */
   accessible: boolean;
+  /** Not open to anyone yet. */
+  comingSoon?: boolean;
   progressPct: number;
   completed: boolean;
 }

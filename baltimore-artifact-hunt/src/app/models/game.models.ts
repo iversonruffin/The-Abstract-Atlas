@@ -74,6 +74,8 @@ export interface CityLocation {
   cityId?: string;
   /** 0-1 completion percentage, derived at runtime from hotspot progress. */
   hotspotIds: string[];
+  /** Shown on the map as "Coming soon" and can't be opened by anyone (guests or accounts) yet. */
+  comingSoon?: boolean;
 }
 
 export interface LeaderboardEntry {

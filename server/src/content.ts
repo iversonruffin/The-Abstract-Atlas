@@ -39,14 +39,20 @@ export interface Location {
   hotspotIds: string[];
   /** Guests (no account) can play this location. Everything else needs an account. */
   guestAccessible: boolean;
+  /** Shown as "Coming soon": nobody (guest or account) can play it yet, and sign-up doesn't unlock it. */
+  comingSoon?: boolean;
 }
 
+// WHO CAN PLAY WHAT (MVP):
+//   Charm City:  Ridgely's = guests,  Inner Harbor = unlocks at sign-up,  Federal Hill = coming soon
+//   Queen City:  Uptown = guests,     University = unlocks at sign-up,    NoDa = coming soon
 export const LOCATIONS: Location[] = [
+  // ---- Charm City (Baltimore) ----
   {
-    id: 'federal-hill',
-    name: 'Federal Hill',
-    tagline: 'Rowhouses, a hilltop park, and harbor views',
-    hotspotIds: ['federal-hill-beacon'],
+    id: 'ridgelys',
+    name: "Ridgely's",
+    tagline: 'Rowhouses in the shadow of Camden Yards',
+    hotspotIds: ['ridgelys-beacon'],
     guestAccessible: true,
   },
   {
@@ -57,19 +63,28 @@ export const LOCATIONS: Location[] = [
     guestAccessible: false,
   },
   {
-    id: 'pigtown',
-    name: 'Pigtown',
-    tagline: "Baltimore's old railroad and stockyard district",
-    hotspotIds: ['pigtown-beacon'],
+    id: 'federal-hill',
+    name: 'Federal Hill',
+    tagline: 'Rowhouses, a hilltop park, and harbor views',
+    hotspotIds: ['federal-hill-beacon'],
     guestAccessible: false,
+    comingSoon: true,
   },
-  // ---- Charlotte (account-only, like every non-Federal-Hill location) ----
+  // Pigtown was replaced by Ridgely's. Kept here for reference.
+  // {
+  //   id: 'pigtown',
+  //   name: 'Pigtown',
+  //   tagline: "Baltimore's old railroad and stockyard district",
+  //   hotspotIds: ['pigtown-beacon'],
+  //   guestAccessible: false,
+  // },
+  // ---- Queen City (Charlotte) ----
   {
     id: 'uptown',
     name: 'Uptown',
     tagline: "Charlotte's skyline, the Queen City's core",
     hotspotIds: ['uptown-beacon'],
-    guestAccessible: false,
+    guestAccessible: true,
   },
   {
     id: 'university',
@@ -84,6 +99,7 @@ export const LOCATIONS: Location[] = [
     tagline: "Charlotte's arts district, in an old mill village",
     hotspotIds: ['noda-beacon'],
     guestAccessible: false,
+    comingSoon: true,
   },
 ];
 
@@ -129,6 +145,24 @@ export const HOTSPOTS: Hotspot[] = [
     ],
   },
   {
+    id: 'ridgelys-beacon',
+    locationId: 'ridgelys',
+    name: "Ridgely's",
+    badge: {
+      id: 'delight-seeker',
+      name: 'Delight Seeker',
+      icon: '⚾',
+      description: "Awarded for completing the Ridgely's challenge.",
+    },
+    questions: [
+      q('rd-1', "Which baseball legend was born on Emory Street in Ridgely's Delight?", ['Babe Ruth', 'Cal Ripken Jr.', 'Jackie Robinson', 'Lou Gehrig'], 0),
+      q('rd-2', "Babe Ruth's father ran a saloon on Conway Street. What part of Camden Yards sits there now?", ['Left-center field', 'Home plate', "The visitors' dugout", 'The Eutaw Street warehouse'], 0),
+      q('rd-3', "Two stadiums sit a short walk from Ridgely's. Which teams play in them?", ['The Orioles and the Ravens', 'The Orioles and the Colts', 'The Nationals and the Ravens', 'The Orioles and the Blast'], 0),
+      q('rd-4', "How does a born-and-raised Baltimorean say 'Maryland'?", ['Merlin', 'Mary-land', 'Mare-uh-land', 'Murr-land'], 0),
+    ],
+  },
+  // Pigtown was replaced by Ridgely's. Its hotspot is kept but no location points to it.
+  {
     id: 'pigtown-beacon',
     locationId: 'pigtown',
     name: 'Pigtown',
@@ -163,6 +197,8 @@ export const HOTSPOTS: Hotspot[] = [
       q('up-3', "Charlotte's downtown core is commonly called:", ['Uptown', 'Midtown', 'Overtown', 'Crosstown'], 0),
       q('up-4', "The two main streets that cross at the center of Uptown are Trade Street and:", ['Tryon Street', 'Elm Street', 'Maple Street', 'Peachtree Street'], 0),
       q('up-5', 'Charlotte is the county seat of which county?', ['Mecklenburg', 'Wake', 'Guilford', 'Durham'], 0),
+      q('up-6', 'Which British general called Charlotte "a hornet\'s nest of rebellion"?', ['Lord Cornwallis', 'William Howe', 'John Burgoyne', 'Henry Clinton'], 0),
+      q('up-7', 'Locals call the corner of Trade and Tryon:', ['The Square', 'The Crossroads', 'The Plaza', 'The Corner'], 0),
     ],
   },
   {

@@ -254,3 +254,10 @@
     text-align: center;
   }
 }
+
+/* "Timed trivia" notice above the Start Challenge button and in the challenge view. */
+.timed-note {
+  margin: 18px 0 12px;
+  font-size: 13px;
+  opacity: 0.85;
+}

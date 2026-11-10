@@ -72,7 +72,7 @@ export class GameApiService {
     return this.readyPromise;
   }
 
-  /** True when the server says this player can't open the location yet (guests: everything but Federal Hill). */
+  /** True when the server says this player can't open the location yet (guests: everything but Ridgely's and Uptown). */
   isLocked(locationId: string): boolean {
     if (!this.enabled) return false;
     const loc = this.locations().find((l) => l.id === locationId);

@@ -24,6 +24,11 @@ export class HotspotModalComponent {
 
   constructor(public progress: ProgressService, public api: GameApiService) {}
 
+  /** Seconds per trivia question, for the "Timed trivia" notice (every question uses the same limit). */
+  get secondsPerQuestion(): number {
+    return this.hotspot?.triviaQuestions?.[0]?.timeLimitSeconds ?? 10;
+  }
+
   ngOnChanges() {
     // Reset to the guide view every time a new hotspot is opened.
     if (this.active) this.view = 'guide';

@@ -4,6 +4,12 @@ import { createApi } from '../src/api.js';
 import { getHotspot } from '../src/content.js';
 import { MemoryRepo } from './memoryRepo.js';
 
+// The guest location's challenge (Ridgely's). Expected scores scale with its question count,
+// so adding or removing questions doesn't break these tests.
+const GUEST_HS = 'ridgelys-beacon';
+const GUEST_LOC = 'ridgelys';
+const N = getHotspot(GUEST_HS)!.questions.length;
+
 const SECRET = 'x'.repeat(40);
 
 let repo: MemoryRepo;
@@ -72,11 +78,11 @@ async function playRun(headers: Record<string, string>, hotspotId: string, opts:
 }
 
 describe('guest flow', () => {
-  it('creates a guest who can play only Federal Hill', async () => {
+  it("creates a guest who can play only Ridgely's and Uptown", async () => {
     const guest = await newGuest();
     const { json } = await call('GET', '/locations', { headers: guest });
     const byId = Object.fromEntries(json.locations.map((l: any) => [l.id, l.accessible]));
-    expect(byId).toEqual({ 'federal-hill': true, 'inner-harbor': false, pigtown: false, uptown: false, university: false, noda: false });
+    expect(byId).toEqual({ ridgelys: true, 'inner-harbor': false, 'federal-hill': false, uptown: true, university: false, noda: false });
   });
 
   it('blocks guests from other locations with the list of what signing up unlocks', async () => {
@@ -84,41 +90,41 @@ describe('guest flow', () => {
     const res = await call('POST', '/challenges/inner-harbor-beacon/start', { headers: guest });
     expect(res.status).toBe(403);
     expect(res.json.error.code).toBe('LOCATION_LOCKED');
-    expect(res.json.error.unlockedBySignUp.map((l: any) => l.id)).toEqual(['inner-harbor', 'pigtown', 'uptown', 'university', 'noda']);
+    expect(res.json.error.unlockedBySignUp.map((l: any) => l.id)).toEqual(['inner-harbor', 'university']);
   });
 
   it('never sends correct answers to the client when a run starts', async () => {
     const guest = await newGuest();
-    const start = await call('POST', '/challenges/federal-hill-beacon/start', { headers: guest });
+    const start = await call('POST', `/challenges/${GUEST_HS}/start`, { headers: guest });
     expect(JSON.stringify(start.json)).not.toContain('correctIndex');
     expect(start.json.question.choices).toHaveLength(4);
   });
 
-  it('scores on the server: 100 + 10/sec left, perfect run at 2s each = 5 * 180', async () => {
+  it('scores on the server: 100 + 10/sec left, perfect run at 2s each = N * 180', async () => {
     const guest = await newGuest();
-    const result = (await playRun(guest, 'federal-hill-beacon')).result;
-    expect(result).toMatchObject({ correctAnswers: 5, totalQuestions: 5, score: 900, completed: true, badgeEarned: true });
-    expect(result.badge.id).toBe('hilltop-adventurer');
+    const result = (await playRun(guest, GUEST_HS)).result;
+    expect(result).toMatchObject({ correctAnswers: N, totalQuestions: N, score: N * 180, completed: true, badgeEarned: true });
+    expect(result.badge.id).toBe('delight-seeker');
   });
 
-  it('shows the sign-up prompt with unlocked locations when a guest completes Federal Hill', async () => {
+  it("shows the sign-up prompt with unlocked locations when a guest completes Ridgely's", async () => {
     const guest = await newGuest();
-    const result = (await playRun(guest, 'federal-hill-beacon')).result;
+    const result = (await playRun(guest, GUEST_HS)).result;
     expect(result.locationCompleted).toBe(true);
-    expect(result.signUpPrompt.badges.map((b: any) => b.id)).toEqual(['hilltop-adventurer']);
-    expect(result.signUpPrompt.unlockedLocations.map((l: any) => l.name)).toEqual(['Inner Harbor', 'Pigtown', 'Uptown', 'University', 'NoDa']);
+    expect(result.signUpPrompt.badges.map((b: any) => b.id)).toEqual(['delight-seeker']);
+    expect(result.signUpPrompt.unlockedLocations.map((l: any) => l.name)).toEqual(['Inner Harbor', 'University']);
   });
 
   it('does not show the sign-up prompt to signed-in users', async () => {
-    const result = (await playRun(user('u1'), 'federal-hill-beacon')).result;
+    const result = (await playRun(user('u1'), GUEST_HS)).result;
     expect(result.signUpPrompt).toBeUndefined();
   });
 
   it('ignores answers that arrive after the time limit', async () => {
     const guest = await newGuest();
-    const start = await call('POST', '/challenges/federal-hill-beacon/start', { headers: guest });
+    const start = await call('POST', `/challenges/${GUEST_HS}/start`, { headers: guest });
     clock += 30_000;
-    const res = await call('POST', '/challenges/federal-hill-beacon/answer', {
+    const res = await call('POST', `/challenges/${GUEST_HS}/answer`, {
       headers: guest,
       body: { attemptId: start.json.attemptId, choiceIndex: 0 },
     });
@@ -127,9 +133,9 @@ describe('guest flow', () => {
 
   it('rejects answers for a replaced or unknown attempt', async () => {
     const guest = await newGuest();
-    const first = await call('POST', '/challenges/federal-hill-beacon/start', { headers: guest });
-    await call('POST', '/challenges/federal-hill-beacon/start', { headers: guest });
-    const res = await call('POST', '/challenges/federal-hill-beacon/answer', {
+    const first = await call('POST', `/challenges/${GUEST_HS}/start`, { headers: guest });
+    await call('POST', `/challenges/${GUEST_HS}/start`, { headers: guest });
+    const res = await call('POST', `/challenges/${GUEST_HS}/answer`, {
       headers: guest,
       body: { attemptId: first.json.attemptId, choiceIndex: 0 },
     });
@@ -145,10 +151,10 @@ describe('guest flow', () => {
 describe('question timing', () => {
   it('does not charge the 0.9s feedback pause against the next question', async () => {
     const headers = user('timer');
-    const start = await call('POST', '/challenges/federal-hill-beacon/start', { headers });
-    const hs = getHotspot('federal-hill-beacon')!;
+    const start = await call('POST', `/challenges/${GUEST_HS}/start`, { headers });
+    const hs = getHotspot(GUEST_HS)!;
     const answer = async (q: any, idx: number) =>
-      call('POST', '/challenges/federal-hill-beacon/answer', { headers, body: { attemptId: start.json.attemptId, choiceIndex: idx } });
+      call('POST', `/challenges/${GUEST_HS}/answer`, { headers, body: { attemptId: start.json.attemptId, choiceIndex: idx } });
     const correctShown = (q: any) => q.choices.indexOf(hs.questions.find((x) => x.id === q.id)!.choices[hs.questions.find((x) => x.id === q.id)!.correctIndex]);
 
     clock += 1000; // Q1 answered after 1s -> 100 + 9*10
@@ -162,25 +168,37 @@ describe('question timing', () => {
 });
 
 describe('accounts and leaderboard', () => {
-  it('lets signed-in users play every location', async () => {
-    const res = await call('POST', '/challenges/pigtown-beacon/start', { headers: user('u1') });
-    expect(res.status).toBe(200);
+  it('lets signed-in users play the sign-up locations', async () => {
+    for (const id of ['inner-harbor-beacon', 'university-beacon']) {
+      const res = await call('POST', `/challenges/${id}/start`, { headers: user('u1') });
+      expect(res.status).toBe(200);
+    }
+  });
+
+  it('keeps coming-soon locations closed to everyone, accounts included', async () => {
+    for (const id of ['federal-hill-beacon', 'noda-beacon']) {
+      expect((await call('POST', `/challenges/${id}/start`, { headers: user('u1') })).status).toBe(403);
+      expect((await call('POST', `/challenges/${id}/start`, { headers: await newGuest() })).status).toBe(403);
+    }
+    const { json } = await call('GET', '/locations');
+    const soon = json.locations.filter((l: any) => l.comingSoon).map((l: any) => l.id);
+    expect(soon).toEqual(['federal-hill', 'noda']);
   });
 
   it('keeps only the best score per hotspot', async () => {
     const headers = user('u1');
-    await playRun(headers, 'federal-hill-beacon', { secondsPerQuestion: 2 }); // 900
-    const worse = (await playRun(headers, 'federal-hill-beacon', { secondsPerQuestion: 8 })).result; // 5 * 120
-    expect(worse).toMatchObject({ score: 600, bestScore: 900, isNewBest: false });
+    await playRun(headers, GUEST_HS, { secondsPerQuestion: 2 }); // N * 180
+    const worse = (await playRun(headers, GUEST_HS, { secondsPerQuestion: 8 })).result; // N * 120
+    expect(worse).toMatchObject({ score: N * 120, bestScore: N * 180, isNewBest: false });
   });
 
   it('ranks registered players and leaves guests off the leaderboard', async () => {
     await call('PATCH', '/me', { headers: user('fast', 'fast@example.com'), body: { playerName: 'fast' } });
     await call('PATCH', '/me', { headers: user('slow', 'slow@example.com'), body: { playerName: 'slow' } });
-    await playRun(user('fast', 'fast@example.com'), 'federal-hill-beacon', { secondsPerQuestion: 1 });
-    await playRun(user('slow', 'slow@example.com'), 'federal-hill-beacon', { secondsPerQuestion: 7 });
-    await playRun(await newGuest(), 'federal-hill-beacon', { secondsPerQuestion: 0 });
-    const board = await call('GET', '/leaderboard/federal-hill');
+    await playRun(user('fast', 'fast@example.com'), GUEST_HS, { secondsPerQuestion: 1 });
+    await playRun(user('slow', 'slow@example.com'), GUEST_HS, { secondsPerQuestion: 7 });
+    await playRun(await newGuest(), GUEST_HS, { secondsPerQuestion: 0 });
+    const board = await call('GET', `/leaderboard/${GUEST_LOC}`);
     expect(board.json.entries.map((e: any) => [e.rank, e.playerName])).toEqual([
       [1, 'fast'],
       [2, 'slow'],
@@ -189,7 +207,7 @@ describe('accounts and leaderboard', () => {
 
   it('validates display names and updates leaderboard rows when renamed', async () => {
     const headers = user('u1', 'someone@example.com');
-    await playRun(headers, 'federal-hill-beacon');
+    await playRun(headers, GUEST_HS);
     expect((await call('PATCH', '/me', { headers, body: { playerName: 'x' } })).status).toBe(400);
     expect((await call('PATCH', '/me', { headers, body: { playerName: '<script>' } })).status).toBe(400);
     // Curse words / slurs and over-long or markup-laden input are refused by the API itself (not just the browser).
@@ -198,7 +216,7 @@ describe('accounts and leaderboard', () => {
     expect((await call('PATCH', '/me', { headers, body: { playerName: { $ne: '' } } })).status).toBe(400);
     expect((await call('GET', '/' + 'a'.repeat(300), { headers })).status).toBe(414);
     expect((await call('PATCH', '/me', { headers, body: { playerName: 'Crab Cakes' } })).status).toBe(200);
-    const board = await call('GET', '/leaderboard/federal-hill');
+    const board = await call('GET', `/leaderboard/${GUEST_LOC}`);
     expect(board.json.entries[0].playerName).toBe('Crab Cakes');
   });
 });
@@ -206,18 +224,18 @@ describe('accounts and leaderboard', () => {
 describe('claiming guest progress on sign-up', () => {
   it('moves the guest badge and score into the new account and puts it on the leaderboard', async () => {
     const guest = await newGuest();
-    await playRun(guest, 'federal-hill-beacon');
+    await playRun(guest, GUEST_HS);
 
     const claim = await call('POST', '/account/claim', { headers: { ...user('newbie', 'newbie@example.com'), ...guest } });
     expect(claim.status).toBe(200);
     expect(claim.json.claimed).toBe(1);
-    expect(claim.json.badges.map((b: any) => b.id)).toEqual(['hilltop-adventurer']);
+    expect(claim.json.badges.map((b: any) => b.id)).toEqual(['delight-seeker']);
     expect(claim.json.player.isGuest).toBe(false);
     expect(claim.json.player.name).toMatch(/^Explorer-\d{4}$/); // never derived from the email
 
-    const board = await call('GET', '/leaderboard/federal-hill');
+    const board = await call('GET', `/leaderboard/${GUEST_LOC}`);
     expect(board.json.entries).toHaveLength(1);
-    expect(board.json.entries[0]).toMatchObject({ rank: 1, score: 900 });
+    expect(board.json.entries[0]).toMatchObject({ rank: 1, score: N * 180 });
     expect(JSON.stringify(board.json)).not.toContain('newbie');
 
     // The guest profile is gone, and the guest can no longer see old progress.
@@ -227,14 +245,14 @@ describe('claiming guest progress on sign-up', () => {
 
   it('merges with an existing account, keeping the best of each', async () => {
     const guest = await newGuest();
-    await playRun(guest, 'federal-hill-beacon', { secondsPerQuestion: 1 }); // 950
+    await playRun(guest, GUEST_HS, { secondsPerQuestion: 1 }); // N * 190
     const headers = user('vet', 'vet@example.com');
-    await playRun(headers, 'federal-hill-beacon', { secondsPerQuestion: 6 }); // 700
-    await playRun(headers, 'pigtown-beacon', { secondsPerQuestion: 2 });
+    await playRun(headers, GUEST_HS, { secondsPerQuestion: 6 }); // N * 140
+    await playRun(headers, 'inner-harbor-beacon', { secondsPerQuestion: 2 });
 
     const claim = await call('POST', '/account/claim', { headers: { ...headers, ...guest } });
-    const fh = claim.json.results.find((r: any) => r.hotspotId === 'federal-hill-beacon');
-    expect(fh.score).toBe(950);
+    const fh = claim.json.results.find((r: any) => r.hotspotId === GUEST_HS);
+    expect(fh.score).toBe(N * 190);
     expect(claim.json.badges).toHaveLength(2);
   });
 

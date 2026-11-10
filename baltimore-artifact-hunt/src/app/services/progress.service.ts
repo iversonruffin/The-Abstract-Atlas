@@ -79,7 +79,8 @@ export class ProgressService {
 
   /** 0-100 completion for a whole city: average of its locations' completion. */
   getCityProgressPct(cityId: string): number {
-    const locations = this.gameData.getLocationsForCity(cityId);
+    // Coming-soon locations don't count, so a city reads 100% once its open locations are done.
+    const locations = this.gameData.getLocationsForCity(cityId).filter((l) => !l.comingSoon);
     if (locations.length === 0) return 0;
     return Math.round(locations.reduce((sum, l) => sum + this.getLocationProgressPct(l.id), 0) / locations.length);
   }

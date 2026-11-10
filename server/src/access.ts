@@ -1,18 +1,20 @@
 // Who can play what.
-//   Guests:   only locations marked guestAccessible (Federal Hill).
-//   Accounts: every location.
+//   Guests:   only locations marked guestAccessible (Ridgely's, Uptown).
+//   Accounts: every location except the ones marked comingSoon (adds Inner Harbor, University).
+//   Nobody:   comingSoon locations (Federal Hill, NoDa) until they're ready.
 // Locations are not GPS-gated for now - players don't have to be physically there.
 
 import { LOCATIONS, Location, getHotspotsForLocation } from './content.js';
 import { Caller, HotspotResult } from './types.js';
 
 export function canAccessLocation(caller: Caller, location: Location): boolean {
+  if (location.comingSoon) return false;
   return caller.kind === 'user' || location.guestAccessible;
 }
 
 /** The locations a guest gets by signing up (shown on the "sign up to save badges" screen). */
 export function locationsUnlockedBySignUp(): Pick<Location, 'id' | 'name' | 'tagline'>[] {
-  return LOCATIONS.filter((l) => !l.guestAccessible).map(({ id, name, tagline }) => ({ id, name, tagline }));
+  return LOCATIONS.filter((l) => !l.guestAccessible && !l.comingSoon).map(({ id, name, tagline }) => ({ id, name, tagline }));
 }
 
 export function isLocationCompleted(locationId: string, results: HotspotResult[]): boolean {

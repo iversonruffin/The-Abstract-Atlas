@@ -18,18 +18,20 @@
           [id]="'beacon-' + hotspot.id"
           class="beacon"
           [class.locked]="!isUnlocked(hotspot)"
+          [class.coming-soon]="isComingSoon(hotspot)"
           [class.completed]="isCompleted(hotspot)"
           [style.left.%]="housePosition(hotspot).xPct"
           [style.bottom.%]="100 - housePosition(hotspot).yPct"
           tabindex="0"
           role="button"
-          [attr.aria-label]="'Open ' + hotspot.name"
+          [attr.aria-label]="isComingSoon(hotspot) ? hotspot.name + ', coming soon' : 'Open ' + hotspot.name"
           (click)="openHotspot(hotspot)"
           (keydown.enter)="openHotspot(hotspot)"
         >
           <div class="beacon-label">
             {{ hotspot.name }}
-            <span *ngIf="!isUnlocked(hotspot)" title="Locked">🔒</span>
+            <span *ngIf="!isUnlocked(hotspot) && !isComingSoon(hotspot)" title="Locked">🔒</span>
+            <span *ngIf="isComingSoon(hotspot)" class="coming-soon-tag">Coming soon</span>
             <span *ngIf="isCompleted(hotspot)" title="Completed">✓</span>
           </div>
           <div class="beacon-ping" *ngIf="isUnlocked(hotspot) && !isCompleted(hotspot)"></div>

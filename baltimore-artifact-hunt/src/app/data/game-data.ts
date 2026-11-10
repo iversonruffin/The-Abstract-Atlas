@@ -9,14 +9,19 @@ import { City, CityLocation, Hotspot } from '../models/game.models';
 // swap in real history/art facts before this goes live.
 // ---------------------------------------------------------------------------
 
+// WHO CAN PLAY WHAT (MVP):
+//   Charm City:  Ridgely's = guests,  Inner Harbor = unlocks at sign-up,  Federal Hill = coming soon
+//   Queen City:  Uptown = guests,     University = unlocks at sign-up,    NoDa = coming soon
+// The server enforces this in server/src/content.ts (guestAccessible / comingSoon). Keep both in sync.
 export const CITY_LOCATIONS: CityLocation[] = [
-  // Federal Hill is the first open location (guests can play it), so it is listed first on the map.
+  // ---- Charm City (Baltimore) ----
+  // Ridgely's replaced Pigtown and is the first open location (guests can play it), so it is listed first.
   {
-    id: 'federal-hill',
+    id: 'ridgelys',
     cityId: 'baltimore',
-    name: 'Federal Hill',
-    tagline: 'Rowhouses, a hilltop park, and harbor views',
-    hotspotIds: ['federal-hill-beacon'],
+    name: "Ridgely's",
+    tagline: 'Rowhouses in the shadow of Camden Yards',
+    hotspotIds: ['ridgelys-beacon'],
   },
   {
     id: 'inner-harbor',
@@ -26,12 +31,21 @@ export const CITY_LOCATIONS: CityLocation[] = [
     hotspotIds: ['inner-harbor-beacon'],
   },
   {
-    id: 'pigtown',
+    id: 'federal-hill',
     cityId: 'baltimore',
-    name: 'Pigtown',
-    tagline: "Baltimore's old railroad and stockyard district",
-    hotspotIds: ['pigtown-beacon'],
+    name: 'Federal Hill',
+    tagline: 'Rowhouses, a hilltop park, and harbor views',
+    hotspotIds: ['federal-hill-beacon'],
+    comingSoon: true,
   },
+  // Pigtown was replaced by Ridgely's. Kept here for reference.
+  // {
+  //   id: 'pigtown',
+  //   cityId: 'baltimore',
+  //   name: 'Pigtown',
+  //   tagline: "Baltimore's old railroad and stockyard district",
+  //   hotspotIds: ['pigtown-beacon'],
+  // },
   // ---- Charlotte ----
   {
     id: 'uptown',
@@ -53,22 +67,23 @@ export const CITY_LOCATIONS: CityLocation[] = [
     name: 'NoDa',
     tagline: "Charlotte's arts district, in an old mill village",
     hotspotIds: ['noda-beacon'],
+    comingSoon: true,
   },
 ];
 
-/** Cities shown on the home page. Charlotte first, then Baltimore. */
+/** Cities shown on the home page. Queen City (Charlotte) first, then Charm City (Baltimore). Ids stay the same. */
 export const CITIES: City[] = [
   {
     id: 'charlotte',
-    name: 'Charlotte',
-    tagline: 'The Queen City: Uptown, University, and NoDa',
+    name: 'Queen City',
+    tagline: 'Charlotte: Uptown, University, and NoDa',
     locationIds: ['uptown', 'university', 'noda'],
   },
   {
     id: 'baltimore',
-    name: 'Baltimore',
-    tagline: 'Charm City: Federal Hill, the Inner Harbor, and Pigtown',
-    locationIds: ['federal-hill', 'inner-harbor', 'pigtown'],
+    name: 'Charm City',
+    tagline: "Baltimore: Ridgely's, the Inner Harbor, and Federal Hill",
+    locationIds: ['ridgelys', 'inner-harbor', 'federal-hill'],
   },
 ];
 
@@ -136,8 +151,40 @@ export const HOTSPOTS: Hotspot[] = [
     },
     unlockRequires: [],
     position: { xPct: 50, yPct: 78 },
+    cityPosition: { xPct: 80, yPct: 78 },
+  },
+  {
+    id: 'ridgelys-beacon',
+    locationId: 'ridgelys',
+    name: "Ridgely's",
+    category: 'landmark',
+    knownFor: 'Rowhouses beside Camden Yards',
+    guideBlurb:
+      "Ridgely's Delight is a small neighborhood of 19th-century rowhouses tucked between Oriole Park at Camden Yards and the University of Maryland, Baltimore. Babe Ruth was born here, on Emory Street.",
+    story: {
+      title: "A Ridgely's Story",
+      body: "PLACEHOLDER STORY COPY — replace with the Ridgely's story.",
+      footer: "— a local Ridgely's legend",
+    },
+    challengeType: 'trivia',
+    triviaQuestions: [
+      q('rd-1', "Which baseball legend was born on Emory Street in Ridgely's Delight?", ['Babe Ruth', 'Cal Ripken Jr.', 'Jackie Robinson', 'Lou Gehrig'], 0),
+      q('rd-2', "Babe Ruth's father ran a saloon on Conway Street. What part of Camden Yards sits there now?", ['Left-center field', 'Home plate', "The visitors' dugout", 'The Eutaw Street warehouse'], 0),
+      q('rd-3', "Two stadiums sit a short walk from Ridgely's. Which teams play in them?", ['The Orioles and the Ravens', 'The Orioles and the Colts', 'The Nationals and the Ravens', 'The Orioles and the Blast'], 0),
+      q('rd-4', "How does a born-and-raised Baltimorean say 'Maryland'?", ['Merlin', 'Mary-land', 'Mare-uh-land', 'Murr-land'], 0),
+    ],
+    badge: {
+      id: 'delight-seeker',
+      name: 'Delight Seeker',
+      icon: '⚾',
+      description: "Awarded for completing the Ridgely's challenge.",
+    },
+    characters: [],
+    unlockRequires: [],
+    position: { xPct: 50, yPct: 78 },
     cityPosition: { xPct: 20, yPct: 78 },
   },
+  // Pigtown was replaced by Ridgely's. Its hotspot below is no longer listed on the map (no location points to it).
   {
     id: 'pigtown-beacon',
     locationId: 'pigtown',
@@ -197,6 +244,8 @@ export const HOTSPOTS: Hotspot[] = [
       q('up-3', "Charlotte's downtown core is commonly called:", ['Uptown', 'Midtown', 'Overtown', 'Crosstown'], 0),
       q('up-4', 'The two main streets that cross at the center of Uptown are Trade Street and:', ['Tryon Street', 'Elm Street', 'Maple Street', 'Peachtree Street'], 0),
       q('up-5', 'Charlotte is the county seat of which county?', ['Mecklenburg', 'Wake', 'Guilford', 'Durham'], 0),
+      q('up-6', 'Which British general called Charlotte "a hornet\'s nest of rebellion"?', ['Lord Cornwallis', 'William Howe', 'John Burgoyne', 'Henry Clinton'], 0),
+      q('up-7', 'Locals call the corner of Trade and Tryon:', ['The Square', 'The Crossroads', 'The Plaza', 'The Corner'], 0),
     ],
     badge: {
       id: 'queen-city-climber',

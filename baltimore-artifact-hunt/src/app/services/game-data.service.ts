@@ -15,6 +15,11 @@ export class GameDataService {
     return this.locations.find((l) => l.id === locationId);
   }
 
+  /** Locations marked comingSoon show on the map but nobody can open them yet. */
+  isComingSoon(locationId: string): boolean {
+    return !!this.getLocation(locationId)?.comingSoon;
+  }
+
   getHotspotsForLocation(locationId: string): Hotspot[] {
     return this.hotspots.filter((h) => h.locationId === locationId);
   }

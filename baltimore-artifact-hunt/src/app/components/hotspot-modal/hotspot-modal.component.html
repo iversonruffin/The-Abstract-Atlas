@@ -41,6 +41,11 @@
         <span class="story-arrow">›</span>
       </div>
 
+      <!-- Tell players up front that the challenge is timed. -->
+      <p class="timed-note" *ngIf="hotspot.challengeType === 'trivia'">
+        ⏱ Timed trivia: {{ hotspot.triviaQuestions?.length ?? 0 }} questions, {{ secondsPerQuestion }} seconds each. Faster right answers score more.
+      </p>
+
       <button id="start-challenge" *ngIf="!progress.isHotspotCompleted(hotspot.id)" (click)="showChallenge()">
         Start Challenge
       </button>
@@ -81,6 +86,7 @@
       <button id="story-back" (click)="showGuide()">‹ Back to guide</button>
       <div class="modal-kicker">Challenge</div>
       <h2>{{ hotspot.name }} Trivia</h2>
+      <p class="timed-note">⏱ {{ secondsPerQuestion }} seconds per question. Answer fast!</p>
       <!-- Offline mode (no backend configured): the original local trivia. -->
       <app-trivia-challenge *ngIf="!api.enabled" [hotspot]="hotspot" (finished)="onChallengeFinished()"></app-trivia-challenge>
       <!-- Online mode: the server supplies questions and scores. -->
