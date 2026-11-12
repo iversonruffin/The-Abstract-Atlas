@@ -221,7 +221,8 @@ export const HOTSPOTS: Hotspot[] = [
     name: 'Uptown',
     badge: {
       id: 'queen-city-climber',
-      name: 'Queen City Climber',
+      // was: 'Queen City Climber'
+      name: 'Panther Expert',
       icon: '🏙️',
       description: 'Awarded for completing the Uptown challenge.',
     },
@@ -252,7 +253,8 @@ export const HOTSPOTS: Hotspot[] = [
     name: 'University',
     badge: {
       id: 'campus-scholar',
-      name: 'Campus Scholar',
+      // was: 'Campus Scholar'
+      name: 'Scholarly Scholar',
       icon: '🎓',
       description: 'Awarded for completing the University challenge.',
     },

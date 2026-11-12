@@ -98,13 +98,14 @@ export const HOTSPOTS: Hotspot[] = [
     category: 'landmark',
     founded: '1729',
     knownFor: 'Piers & Pavilions',
-    guideBlurb:
-      "Baltimore's Inner Harbor is the historic waterfront heart of the city — once a working port, now a lively promenade of piers, museums, and pavilions ringing the water.",
+    // was: "Baltimore's Inner Harbor is the historic waterfront heart of the city — once a working port, now a lively promenade of piers, museums, and pavilions ringing the water."
+    guideBlurb: "Baltimore's Inner Harbor is the historic waterfront heart of the city.",
     story: {
       title: 'Quiet Down Below',
-      body:
-        'PLACEHOLDER STORY COPY — replace with the official "Quiet Down Below" narrative from the game bible.',
-      footer: '— a local Inner Harbor legend',
+      // was: 'PLACEHOLDER STORY COPY — replace with the official "Quiet Down Below" narrative from the game bible.'
+      body: "As above, so below. What goes up, must come down. But what about something going down and never coming back up?",
+      // was: '— a local Inner Harbor legend'
+      footer: "-- Beware the Depths",
     },
     challengeType: 'trivia',
     triviaQuestions: [
@@ -131,6 +132,13 @@ export const HOTSPOTS: Hotspot[] = [
       icon: '🏆',
       description: 'Awarded for completing the Inner Harbor challenge.',
     },
+    characters: [
+      {
+        id: 'lady-locness',
+        name: 'Lady Locness',
+        story: "The Harbor's Keeper",
+      },
+    ],
     unlockRequires: [],
     position: { xPct: 50, yPct: 78 },
     cityPosition: { xPct: 67, yPct: 78 }, // was 50: two houses per city, evenly spaced
@@ -172,13 +180,15 @@ export const HOTSPOTS: Hotspot[] = [
     locationId: 'ridgelys',
     name: "Ridgely's",
     category: 'landmark',
-    knownFor: 'Rowhouses beside Camden Yards',
+    // was: 'Rowhouses beside Camden Yards'
+    knownFor: "\"You mean Pigtown?\", Babe Ruth's Birthplace (Museum), Tiny Land Oasis",
     guideBlurb:
       "Ridgely's Delight is a small neighborhood of 19th-century rowhouses tucked between Oriole Park at Camden Yards and the University of Maryland, Baltimore. Babe Ruth was born here, on Emory Street.",
     story: {
       title: "A Ridgely's Story",
       body: "PLACEHOLDER STORY COPY — replace with the Ridgely's story.",
-      footer: "— a local Ridgely's legend",
+      // was: "— a local Ridgely's legend"
+      footer: "— Sweet & Sour",
     },
     challengeType: 'trivia',
     triviaQuestions: [
@@ -204,7 +214,13 @@ export const HOTSPOTS: Hotspot[] = [
       icon: '⚾',
       description: "Awarded for completing the Ridgely's challenge.",
     },
-    characters: [],
+    characters: [
+      {
+        id: 'ray-vin',
+        name: 'Ray Vin',
+        story: 'someone who can trance you into a conversation',
+      },
+    ],
     unlockRequires: [],
     position: { xPct: 50, yPct: 78 },
     cityPosition: { xPct: 33, yPct: 78 }, // was 20: two houses per city, evenly spaced
@@ -254,13 +270,16 @@ export const HOTSPOTS: Hotspot[] = [
     locationId: 'uptown',
     name: 'Uptown',
     category: 'landmark',
-    knownFor: 'Skyline & the Trade/Tryon crossroads',
-    guideBlurb:
-      "Uptown is Charlotte's downtown core, where the city's tallest towers rise around the crossing of Trade and Tryon streets.",
+    // was: 'Skyline & the Trade/Tryon crossroads'
+    knownFor: "Sports Hub, Limited Parking, \"I hope we don't get booted!\"",
+    // was: "Uptown is Charlotte's downtown core, where the city's tallest towers rise around the crossing of Trade and Tryon streets."
+    guideBlurb: "Uptown is Charlotte's downtown core, where roads go one-way and good and bad times are around every corner.",
     story: {
       title: 'The Queen at the Crossroads',
-      body: 'PLACEHOLDER STORY COPY — replace with the official Uptown story.',
-      footer: '— a local Uptown legend',
+      // was: 'PLACEHOLDER STORY COPY — replace with the official Uptown story.'
+      body: "Charlotte never calls it a night. Just because everything's closed doesn't mean nothing's open.",
+      // was: '— a local Uptown legend'
+      footer: "— a local of University City",
     },
     challengeType: 'trivia',
     triviaQuestions: [
@@ -285,7 +304,8 @@ export const HOTSPOTS: Hotspot[] = [
     ],
     badge: {
       id: 'queen-city-climber',
-      name: 'Queen City Climber',
+      // was: 'Queen City Climber'
+      name: 'Panther Expert',
       icon: '🏙️',
       description: 'Awarded for completing the Uptown challenge.',
     },
@@ -294,7 +314,9 @@ export const HOTSPOTS: Hotspot[] = [
         id: 'jesus-saves-guy',
         name: 'The "Jesus Saves!" Guy',
         // photo: 'images/characters/jesus-saves-guy.jpg', // <- uncomment once the picture is in public/images/characters/
-        story: 'PLACEHOLDER — a short story about who he is goes here.',
+        // was: 'PLACEHOLDER — a short story about who he is goes here.'
+        story: 'Heard from afar, seen rarely',
+        // fullStory: your full story (from the Google Doc) goes here; separate paragraphs with a blank line.
       },
     ],
     unlockRequires: [],
@@ -306,11 +328,13 @@ export const HOTSPOTS: Hotspot[] = [
     locationId: 'university',
     name: 'University',
     category: 'landmark',
-    knownFor: 'Campus life & University City',
+    // was: 'Campus life & University City'
+    knownFor: "UNC Charlotte, Partying, Late-night Fun",
     guideBlurb:
       'The University area around UNC Charlotte, north of Uptown, is where students, researchers, and neighbors share a fast-growing corner of the city.',
     story: {
-      title: 'The Gold Rush Scholars',
+      // was: 'The Gold Rush Scholars'
+      title: "Now You See Me, Now You See Me Again",
       body: 'PLACEHOLDER STORY COPY — replace with the official University story.',
       footer: '— a local University legend',
     },
@@ -335,11 +359,18 @@ export const HOTSPOTS: Hotspot[] = [
     ],
     badge: {
       id: 'campus-scholar',
-      name: 'Campus Scholar',
+      // was: 'Campus Scholar'
+      name: 'Scholarly Scholar',
       icon: '🎓',
       description: 'Awarded for completing the University challenge.',
     },
-    characters: [],
+    characters: [
+      {
+        id: 'jules-redrun',
+        name: 'Jules Redrun',
+        story: 'Everywhere and not',
+      },
+    ],
     unlockRequires: [],
     position: { xPct: 50, yPct: 78 },
     cityPosition: { xPct: 67, yPct: 78 }, // was 50: two houses per city, evenly spaced
