@@ -64,11 +64,12 @@ export class HotspotModalComponent {
     this.view = 'story';
   }
   showCharacters() {
-    // One character: straight to their comic cover. Several (or none): the list, where each opens its cover.
-    if (this.hotspot.characters?.length === 1) {
-      this.openCover(0);
-      return;
-    }
+    // Always show the People list first; tapping a person there opens their comic cover (openCover).
+    // (Tried 11/11: one character went straight to the cover. Kept for reference.)
+    // if (this.hotspot.characters?.length === 1) {
+    //   this.openCover(0);
+    //   return;
+    // }
     this.view = 'characters';
   }
   showChallenge() {
