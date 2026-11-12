@@ -47,6 +47,19 @@ export interface Character {
   photo?: string;
   /** Short story about who they are. */
   story: string;
+  /** Comic cover page (11/11), all optional: */
+  /** One or two lines shown in the box under the name. */
+  bio?: string;
+  /** The full story. Separate paragraphs with a blank line. Falls back to `story`. */
+  fullStory?: string;
+  /** Small line at the bottom, e.g. "Spotted near Trade & Tryon". */
+  spotted?: string;
+  /** Cover layer 1, the setting: path under public/, e.g. 'images/characters/jesus-saves-guy-bg.jpg' (2:3, 1200 x 1800). */
+  coverBackground?: string;
+  /** Cover layer 2, the person cut out: e.g. 'images/characters/jesus-saves-guy.png' (same size, transparent). */
+  coverArt?: string;
+  /** Issue number on the cover tag. Defaults to the character's place in the list (No. 1, No. 2...). */
+  issue?: number;
 }
 
 export type ChallengeType = 'trivia' | 'mini-game';

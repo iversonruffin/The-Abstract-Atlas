@@ -516,3 +516,8 @@
   color: #a8641a;
   line-height: 1.2;
 }
+
+/* Keep the house zoom (scale 2.4) inside the screen. Without this, phones widen the whole page when a house opens. */
+:host {
+  overflow: clip;
+}

@@ -71,7 +71,7 @@
       <div class="modal-kicker">Characters</div>
       <h2>People of {{ hotspot.name }}</h2>
       <p class="no-characters" *ngIf="!hotspot.characters?.length">The people of {{ hotspot.name }} are coming soon.</p>
-      <article class="character" *ngFor="let c of hotspot.characters">
+      <article class="character" *ngFor="let c of hotspot.characters; let i = index" tabindex="0" role="button" [attr.aria-label]="'Open ' + c.name" (click)="openCover(i)" (keydown.enter)="openCover(i)">
         <img *ngIf="c.photo; else noPhoto" class="character-photo" [src]="c.photo" [alt]="'Photo of ' + c.name" loading="lazy" />
         <ng-template #noPhoto><div class="character-photo character-photo-empty" aria-hidden="true">👤</div></ng-template>
         <div class="character-text">
@@ -80,6 +80,16 @@
         </div>
       </article>
     </div>
+
+    <!-- Character comic cover (opens over everything; see components/character-cover) -->
+    <app-character-cover
+      *ngIf="coverIndex !== null && hotspot.characters?.[coverIndex] as c"
+      [character]="c"
+      [locationName]="coverLocationName"
+      [cityName]="coverCityName"
+      [issue]="c.issue ?? coverIndex + 1"
+      (closed)="closeCover()"
+    ></app-character-cover>
 
     <!-- Challenge view -->
     <div id="challenge-view" *ngIf="view === 'challenge'">

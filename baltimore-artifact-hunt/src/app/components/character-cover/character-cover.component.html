@@ -1,0 +1,43 @@
+<div class="cc-overlay play" [ngClass]="entrance" (click)="$event.target === $event.currentTarget && close()">
+  <button type="button" class="cc-close" aria-label="Close" (click)="close()">&times;</button>
+
+  <div class="cc-stage">
+    <!-- The cover: two drawn layers, then the game's masthead, name, sticker and shine on top -->
+    <div class="cc-cover" #cover (mousemove)="onMove($event, cover)" (mouseleave)="resetShift()">
+      <!-- Layer 1: the background (setting). Placeholder sunburst until coverBackground is set. -->
+      <div class="cc-bg" [style.translate]="bgShift">
+        <img *ngIf="character.coverBackground && !bgFailed" [src]="character.coverBackground" alt="" (error)="bgFailed = true" />
+        <div class="cc-rays" *ngIf="!character.coverBackground || bgFailed"></div>
+        <div class="cc-dots"></div>
+      </div>
+
+      <!-- Layer 2: the person, cut out. Placeholder until coverArt is set. -->
+      <div class="cc-art" [style.translate]="artShift">
+        <img *ngIf="character.coverArt && !artFailed" [src]="character.coverArt" [alt]="character.name" (error)="artFailed = true" />
+        <div class="cc-art-placeholder" *ngIf="!character.coverArt || artFailed">
+          <strong>Person art</strong>
+          <small>PNG, cut out on transparency</small>
+        </div>
+      </div>
+
+      <div class="cc-mast">
+        <img class="cc-logo-img" *ngIf="logoSrc && !logoFailed" [src]="logoSrc" alt="Abstract Atlas" (error)="logoFailed = true" />
+        <span class="cc-logo" *ngIf="!logoSrc || logoFailed"><span class="cc-logo-mark"></span><span class="cc-logo-word">ABSTRACT <b>ATLAS</b></span></span>
+        <span class="cc-issue">{{ cityName | uppercase }}<br />No. {{ issue }}</span>
+      </div>
+      <h2 class="cc-title">{{ character.name }}</h2>
+      <span class="cc-sticker">{{ locationName }}</span>
+      <div class="cc-shine"></div>
+    </div>
+
+    <!-- The story, beside the cover (below it on phones) -->
+    <article class="cc-story">
+      <button type="button" class="cc-back" (click)="close()">&lsaquo; Back to {{ locationName }}</button>
+      <span class="cc-kicker">PEOPLE OF {{ locationName | uppercase }}</span>
+      <h2>{{ character.name }}</h2>
+      <p class="cc-bio" *ngIf="character.bio">{{ character.bio }}</p>
+      <p *ngFor="let p of paragraphs">{{ p }}</p>
+      <p class="cc-where" *ngIf="character.spotted">{{ character.spotted }}</p>
+    </article>
+  </div>
+</div>

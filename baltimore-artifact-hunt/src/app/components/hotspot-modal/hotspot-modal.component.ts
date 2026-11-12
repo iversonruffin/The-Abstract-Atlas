@@ -2,6 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Hotspot } from '../../models/game.models';
 import { GameApiService } from '../../services/game-api.service';
+import { GameDataService } from '../../services/game-data.service';
+import { CharacterCoverComponent } from '../character-cover/character-cover.component';
 import { ProgressService } from '../../services/progress.service';
 import { TriviaChallengeComponent } from '../trivia-challenge/trivia-challenge.component';
 import { TriviaOnlineComponent } from '../trivia-online/trivia-online.component';
@@ -11,7 +13,7 @@ export type ModalView = 'guide' | 'story' | 'challenge' | 'characters';
 @Component({
   selector: 'app-hotspot-modal',
   standalone: true,
-  imports: [CommonModule, TriviaChallengeComponent, TriviaOnlineComponent],
+  imports: [CommonModule, TriviaChallengeComponent, TriviaOnlineComponent, CharacterCoverComponent],
   templateUrl: './hotspot-modal.component.html',
   styleUrl: './hotspot-modal.component.css',
 })
@@ -23,8 +25,26 @@ export class HotspotModalComponent {
   @Output() closed = new EventEmitter<void>();
 
   view: ModalView = 'guide';
+  /** Which character's comic cover is open (index into hotspot.characters), or null. */
+  coverIndex: number | null = null;
 
-  constructor(public progress: ProgressService, public api: GameApiService) {}
+  constructor(public progress: ProgressService, public api: GameApiService, private gameData: GameDataService) {}
+
+  openCover(index: number) {
+    this.coverIndex = index;
+  }
+  closeCover() {
+    this.coverIndex = null;
+  }
+  /** Location name for the cover sticker, e.g. "Uptown". */
+  get coverLocationName(): string {
+    return this.gameData.getLocation(this.hotspot.locationId)?.name ?? this.hotspot.name;
+  }
+  /** City name for the cover's issue tag, e.g. "Queen City". */
+  get coverCityName(): string {
+    const cityId = this.gameData.getLocation(this.hotspot.locationId)?.cityId;
+    return (cityId && this.gameData.getCity(cityId)?.name) || '';
+  }
 
   /** Seconds per trivia question, for the "Timed trivia" notice (every question uses the same limit). */
   get secondsPerQuestion(): number {
@@ -34,6 +54,7 @@ export class HotspotModalComponent {
   ngOnChanges() {
     // Reset every time a house is opened: to the view that house is for (the guide by default).
     if (this.active) this.view = this.startView;
+    if (!this.active) this.coverIndex = null;
   }
 
   showGuide() {
@@ -43,6 +64,11 @@ export class HotspotModalComponent {
     this.view = 'story';
   }
   showCharacters() {
+    // One character: straight to their comic cover. Several (or none): the list, where each opens its cover.
+    if (this.hotspot.characters?.length === 1) {
+      this.openCover(0);
+      return;
+    }
     this.view = 'characters';
   }
   showChallenge() {

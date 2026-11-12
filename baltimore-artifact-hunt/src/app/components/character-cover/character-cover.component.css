@@ -1,0 +1,310 @@
+/* The character comic cover. Colors match the field guide (cream + brown) and the comic cover mock. */
+.cc-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 20px 16px;
+  background: rgba(12, 16, 26, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Arial, sans-serif;
+  animation: cc-fade 0.2s ease-out both;
+}
+.cc-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 360px) minmax(0, 440px);
+  gap: 28px;
+  align-items: center;
+  width: min(100%, 860px);
+  perspective: 1100px;
+}
+.cc-close {
+  position: fixed;
+  z-index: 201;
+  top: 14px;
+  right: 14px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #1a1410;
+  background: #ffd23f;
+  color: #1a1410;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #1a1410;
+}
+
+/* ---- the cover (2:3, like a real comic) ---- */
+.cc-cover {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  width: 100%;
+  overflow: hidden;
+  border: 4px solid #1a1410;
+  box-shadow: 10px 10px 0 #1a1410;
+  background: #2f6fd6;
+  transform-origin: 50% 60%;
+  container-type: inline-size;
+}
+.cc-bg,
+.cc-art {
+  position: absolute;
+  inset: 0;
+  transition: translate 0.15s ease-out;
+}
+.cc-bg img,
+.cc-art img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
+}
+.cc-rays {
+  position: absolute;
+  inset: -30%;
+  background: repeating-conic-gradient(from 0deg at 50% 55%, rgba(255, 210, 63, 0.92) 0 7deg, rgba(255, 210, 63, 0) 7deg 16deg);
+}
+.cc-dots {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(rgba(0, 0, 0, 0.2) 1.3px, transparent 1.8px) 0 0 / 7px 7px;
+}
+.cc-art {
+  transform-origin: 50% 100%;
+}
+/* placeholder for the person layer: keep the person below the top third (the name sits there) */
+.cc-art-placeholder {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 0;
+  height: 58%;
+  box-sizing: border-box;
+  border: 3px dashed rgba(255, 255, 255, 0.9);
+  border-bottom: 0;
+  border-radius: 40% 40% 0 0;
+  background: rgba(26, 20, 16, 0.35);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-align: center;
+}
+.cc-art-placeholder strong {
+  font-family: 'Bangers', Impact, sans-serif;
+  font-weight: normal;
+  font-size: 8cqw;
+  letter-spacing: 0.05em;
+}
+.cc-art-placeholder small {
+  font-size: 3.6cqw;
+  opacity: 0.9;
+}
+
+/* masthead: logo + issue tag */
+.cc-mast {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 3cqw 3.5cqw 0;
+}
+.cc-logo-img {
+  width: 62%;
+  height: auto;
+  rotate: -3deg;
+}
+.cc-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 2cqw;
+  padding: 1cqw 2.4cqw;
+  background: #1a1410;
+  border: 0.8cqw solid #fff;
+  rotate: -3deg;
+  box-shadow: 1cqw 1cqw 0 rgba(0, 0, 0, 0.35);
+}
+.cc-logo-mark {
+  width: 7cqw;
+  height: 7cqw;
+  background: #ffd23f;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+.cc-logo-word {
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: 7cqw;
+  letter-spacing: 0.08em;
+  color: #fff;
+  line-height: 1;
+}
+.cc-logo-word b {
+  color: #ffd23f;
+  font-weight: normal;
+}
+.cc-issue {
+  max-width: 22%;
+  background: #fff;
+  color: #1a1410;
+  border: 0.6cqw solid #1a1410;
+  padding: 1cqw 1.6cqw;
+  font-size: 3cqw;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+}
+.cc-title {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 17%;
+  z-index: 2;
+  margin: 0;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-weight: normal;
+  font-size: 13cqw;
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  text-align: center;
+  text-transform: uppercase;
+  color: #ffd23f;
+  -webkit-text-stroke: 0.4cqw #1a1410;
+  text-shadow: 1.1cqw 1.1cqw 0 #1a1410;
+  rotate: -4deg;
+}
+.cc-sticker {
+  position: absolute;
+  left: 3cqw;
+  bottom: 4cqw;
+  z-index: 3;
+  rotate: -6deg;
+  background: #e8473c;
+  color: #fff;
+  border: 0.6cqw solid #1a1410;
+  box-shadow: 1cqw 1cqw 0 #1a1410;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: 6cqw;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 1cqw 3cqw 0.4cqw;
+}
+/* glossy: a soft sheen all the time, plus a shine that sweeps across when it lands */
+.cc-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 40%);
+}
+.cc-shine {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.55) 47%, rgba(255, 255, 255, 0.15) 52%, transparent 60%) no-repeat;
+  background-size: 250% 100%;
+  background-position: 160% 0;
+  mix-blend-mode: screen;
+}
+
+/* ---- the story ---- */
+.cc-story {
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 24px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: linear-gradient(180deg, #fdf6e3 0%, #f3e6c4 100%);
+  color: #4a3320;
+  border: 4px solid #1a1410;
+  box-shadow: 8px 8px 0 #1a1410;
+}
+.cc-back {
+  align-self: flex-start;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: #a8641a;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.cc-kicker {
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 0.14em;
+  color: #a8641a;
+}
+.cc-story h2 {
+  margin: 0;
+  font-family: 'Bangers', Impact, sans-serif;
+  font-weight: normal;
+  font-size: 34px;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  color: #1a1410;
+}
+.cc-story p {
+  margin: 0;
+  line-height: 1.6;
+}
+.cc-story .cc-bio {
+  padding: 12px 14px;
+  background: rgba(122, 90, 52, 0.1);
+  border: 1px solid rgba(122, 90, 52, 0.3);
+  font-style: italic;
+}
+.cc-story .cc-where {
+  padding-top: 12px;
+  border-top: 1px solid rgba(122, 90, 52, 0.3);
+  font-size: 13px;
+  color: #7a5a34;
+}
+
+/* ---- landing ---- */
+@keyframes cc-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes cc-pop { 0% { transform: translateY(14%) scale(0.8); opacity: 0; } 60% { transform: translateY(-2%) scale(1.06); opacity: 1; } 100% { transform: none; } }
+@keyframes cc-stamp { 0% { transform: scale(2.4) rotate(10deg); opacity: 0; } 70% { transform: scale(0.94); opacity: 1; } 100% { transform: none; } }
+@keyframes cc-shine { from { background-position: 160% 0; } to { background-position: -60% 0; } }
+@keyframes cc-slide { from { transform: translateX(40px) rotate(2deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes cc-rise { from { transform: translateY(30px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes cc-slap { 0% { transform: scale(2.6) rotate(-16deg); opacity: 0; } 55% { transform: scale(0.95) rotate(-1deg); opacity: 1; } 75% { transform: scale(1.03) rotate(-3deg); } 100% { transform: rotate(-2deg); } }
+@keyframes cc-jolt { 0%, 100% { translate: 0 0; } 25% { translate: -6px 4px; } 50% { translate: 4px -3px; } 75% { translate: -2px 1px; } }
+@keyframes cc-spin { 0% { transform: rotate(-620deg) scale(0); opacity: 0; } 70% { transform: rotate(10deg) scale(1.08); opacity: 1; } 85% { transform: rotate(-5deg) scale(0.98); } 100% { transform: rotate(-2deg); } }
+@keyframes cc-paper { 0% { transform: translateY(-120%) rotateX(70deg) rotateZ(12deg); opacity: 0; } 55% { transform: translateY(5%) rotateX(-12deg) rotateZ(-4deg); opacity: 1; } 75% { transform: translateY(-2%) rotateX(5deg) rotateZ(0); } 100% { transform: rotate(-2deg); } }
+
+.play .cc-art { animation: cc-pop 0.6s 0.3s cubic-bezier(0.2, 1.5, 0.4, 1) both; }
+.play .cc-title { animation: cc-stamp 0.45s 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+.play .cc-logo, .play .cc-logo-img, .play .cc-issue { animation: cc-stamp 0.4s 0.75s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+.play .cc-sticker { animation: cc-stamp 0.4s 0.85s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+.play .cc-shine { animation: cc-shine 0.8s 1s ease-in-out both; }
+.play .cc-story { animation: cc-slide 0.5s 0.85s cubic-bezier(0.2, 0.8, 0.3, 1) both; }
+.play.slap .cc-cover { animation: cc-slap 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+.play.slap .cc-stage { animation: cc-jolt 0.3s 0.3s ease-out both; }
+.play.spin .cc-cover { animation: cc-spin 0.8s cubic-bezier(0.17, 0.84, 0.44, 1) both; }
+.play.paper .cc-cover { animation: cc-paper 0.9s cubic-bezier(0.3, 0.7, 0.4, 1) both; }
+
+/* phones: cover on top, story underneath */
+@media (max-width: 720px) {
+  .cc-overlay { align-items: flex-start; padding-top: 64px; }
+  .cc-stage { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+  .cc-cover { width: min(100%, 320px); }
+  .play .cc-story { animation-name: cc-rise; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .play, .play * { animation: none !important; }
+}
