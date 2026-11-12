@@ -1,6 +1,9 @@
 <ng-container *ngIf="location">
   <div id="zoom-wrap" #zoomWrapEl>
     <div id="scene" #sceneEl>
+      <!-- Queen City has its own night scene (components/queen-night-scene). Every other scene uses these layers. -->
+      <app-queen-night-scene *ngIf="sceneTheme === 'queen-night'" part="back"></app-queen-night-scene>
+      <ng-container *ngIf="sceneTheme !== 'queen-night'">
       <div class="layer sky" data-depth="0.00"></div>
 
       <div class="layer" data-depth="0.08">
@@ -11,6 +14,7 @@
       <div class="layer skyline" data-depth="0.20"></div>
       <div class="layer water" data-depth="0.35"></div>
       <div class="layer pier" data-depth="0.55"></div>
+      </ng-container>
 
       <div class="layer interactive" data-depth="0.55">
         <div
@@ -79,10 +83,11 @@
         -->
       </div>
 
-      <div class="layer" data-depth="0.85">
+      <div class="layer" data-depth="0.85" *ngIf="sceneTheme !== 'queen-night'">
         <div class="fg-cloud fg-cloud1"></div>
         <div class="fg-cloud fg-cloud2"></div>
       </div>
+      <app-queen-night-scene *ngIf="sceneTheme === 'queen-night'" part="front"></app-queen-night-scene>
     </div>
   </div>
 

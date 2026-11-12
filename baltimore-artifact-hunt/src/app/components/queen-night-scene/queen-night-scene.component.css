@@ -1,0 +1,277 @@
+/* Queen City at night. Colors match the "Queen City · Sunset" board on the design canvas. */
+:host {
+  display: contents;
+}
+
+.layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Each moving layer is drawn a little past the screen edges so sliding never shows a gap. */
+.qn-bleed {
+  position: absolute;
+  inset: -8%;
+}
+
+/* 0 · sky */
+.qn-sky {
+  background: linear-gradient(180deg, #2d2a66 0%, #6b4a7a 45%, #f39a62 82%);
+}
+.qn-moon {
+  position: absolute;
+  left: 53%;
+  top: 15%;
+  width: 7vmin;
+  height: 7vmin;
+  border-radius: 50%;
+  background: #ffd27a;
+  box-shadow: 0 0 9vmin 2vmin rgba(255, 190, 110, 0.55);
+}
+
+/* 1 · clouds */
+.qn-cloud {
+  position: absolute;
+  height: 5vmin;
+  border-radius: 999px;
+  background: rgba(246, 170, 130, 0.8);
+}
+.qn-cloud::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 40%;
+  width: 8vmin;
+  height: 8vmin;
+  border-radius: 50%;
+  background: inherit;
+}
+
+/* 2 · skyline */
+.qn-skyline {
+  position: absolute;
+  left: 14%;
+  right: 12%;
+  bottom: 45%;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6%;
+}
+.qn-tower {
+  position: relative;
+  border-radius: 2px 2px 0 0;
+  background-color: #3b3463;
+  /* lit windows */
+  background-image: radial-gradient(#ffd27a 1.2px, transparent 1.8px);
+  background-size: 10px 12px;
+}
+.qn-crown {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: 100%;
+  height: 6vh;
+  background: #f2c27a;
+  clip-path: polygon(0 100%, 0 45%, 14% 72%, 28% 22%, 42% 62%, 50% 0, 58% 62%, 72% 22%, 86% 72%, 100% 45%, 100% 100%);
+}
+
+/* 3 · ground, trees, light rail */
+.qn-ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 47%;
+  background: #3a3f58;
+}
+.qn-trees {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+.qn-trees-back {
+  bottom: 45%;
+  height: 9vh;
+  background: radial-gradient(circle at 4.5vh 4.5vh, #2e4058 0 4.3vh, transparent 4.4vh) 0 0 / 8vh 9vh repeat-x;
+}
+.qn-trees-front {
+  bottom: 43.5%;
+  height: 8vh;
+  background: radial-gradient(circle at 4vh 4vh, #25344a 0 3.8vh, transparent 3.9vh) 3vh 0 / 7.4vh 8vh repeat-x;
+}
+.qn-rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 37%;
+  height: 0.9vh;
+  background: #191c2a;
+}
+.qn-train {
+  position: absolute;
+  left: 48%;
+  bottom: calc(37% + 0.9vh);
+  width: 19%;
+  height: 5vh;
+  box-sizing: border-box;
+  border-radius: 1vh 1vh 0.4vh 0.4vh;
+  background: #f3dcb6;
+  border-bottom: 0.9vh solid #e8704f;
+}
+.qn-train-windows {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 18%;
+  height: 32%;
+  background-image: repeating-linear-gradient(90deg, #ffd27a 0 1.8vw, transparent 1.8vw 2.4vw);
+}
+
+/* 4 · street (the houses sit on the sidewalk's top edge, 22% up from the bottom of the screen) */
+.qn-sidewalk {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 25.9%;
+  box-sizing: border-box;
+  background: #4a4c63;
+  border-top: 0.8vh solid #33354a;
+}
+.qn-store {
+  position: absolute;
+  bottom: 25.9%;
+  width: 26%;
+  height: 17vh;
+}
+.qn-store-left {
+  left: 0;
+  background: #4d3036;
+}
+.qn-store-right {
+  right: 0;
+  background: #3a3b52;
+}
+.qn-store-top {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  top: 12%;
+  height: 20%;
+  background-image: repeating-linear-gradient(90deg, #ffcf7a 0 3vw, transparent 3vw 4vw);
+}
+.qn-awning {
+  position: absolute;
+  left: 3%;
+  right: 3%;
+  bottom: 30%;
+  height: 16%;
+  border-radius: 0 0 0.8vh 0.8vh;
+  background-image: repeating-linear-gradient(90deg, #e8704f 0 1.6vw, #f3dcb6 1.6vw 3.2vw);
+}
+.qn-store-glass {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 0;
+  height: 28%;
+  background-image: repeating-linear-gradient(90deg, #ffcf7a 0 4.4vw, transparent 4.4vw 5.6vw);
+}
+.qn-street-tree {
+  position: absolute;
+  bottom: 25.9%;
+  width: 1vw;
+  height: 8vh;
+  margin-left: -0.5vw;
+  background: #2a1f22;
+}
+.qn-canopy {
+  position: absolute;
+  left: 50%;
+  bottom: 70%;
+  width: 11vh;
+  height: 11vh;
+  margin-left: -5.5vh;
+  border-radius: 50%;
+  background: #253a3a;
+}
+
+/* 5 · foreground */
+.qn-branch {
+  position: absolute;
+  left: 2%;
+  top: 9%;
+  width: 40%;
+  height: 1.6vh;
+  border-radius: 1vh;
+  background: #1a1418;
+  transform: rotate(13deg);
+  transform-origin: 0 50%;
+}
+.qn-twig {
+  position: absolute;
+  left: 20%;
+  top: 16%;
+  width: 15%;
+  height: 1vh;
+  border-radius: 1vh;
+  background: #1a1418;
+  transform: rotate(-24deg);
+  transform-origin: 0 50%;
+}
+.qn-blossom {
+  position: absolute;
+  margin-left: 6%;
+  margin-top: 4%;
+  width: 4.4vh;
+  height: 4.4vh;
+  border-radius: 50%;
+  background: radial-gradient(circle, #e2768f 0 0.7vh, #ffd7cc 0.8vh);
+  box-shadow: 0 0.3vh 0.6vh rgba(0, 0, 0, 0.25);
+}
+.qn-pole {
+  position: absolute;
+  right: 16%;
+  bottom: 0;
+  width: 1vh;
+  height: 52%;
+  background: #121319;
+}
+.qn-sign {
+  position: absolute;
+  padding: 0.5vh 1.2vh;
+  border-radius: 3px;
+  background: #183c2c;
+  color: #ffffff;
+  font: 700 clamp(10px, 1.7vh, 15px) / 1.2 Arial, sans-serif;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+.qn-sign-trade {
+  right: calc(16% - 7vh);
+  bottom: 50%;
+}
+.qn-sign-tryon {
+  right: calc(16% + 1.5vh);
+  bottom: 45%;
+}
+
+/* Phones: blossoms scale with the narrow width, the branch sits below the heading, and the street tree steps aside for the house labels. */
+.qn-blossom {
+  width: min(4.4vh, 6vw);
+  height: min(4.4vh, 6vw);
+}
+@media (max-width: 600px) {
+  .qn-branch,
+  .qn-twig,
+  .qn-blossom {
+    translate: 0 14vh;
+  }
+  .qn-street-tree {
+    display: none;
+  }
+}

@@ -37,11 +37,12 @@ export interface SceneHouse {
 import { LeaderboardComponent } from '../leaderboard/leaderboard.component';
 import { LeaderboardOnlineComponent } from '../leaderboard-online/leaderboard-online.component';
 import { ProgressBarComponent } from '../progress-bar/progress-bar.component';
+import { QueenNightSceneComponent } from '../queen-night-scene/queen-night-scene.component';
 
 @Component({
   selector: 'app-location-scene',
   standalone: true,
-  imports: [CommonModule, RouterLink, HotspotModalComponent, ProgressBarComponent, LeaderboardComponent, LeaderboardOnlineComponent],
+  imports: [CommonModule, RouterLink, HotspotModalComponent, ProgressBarComponent, LeaderboardComponent, LeaderboardOnlineComponent, QueenNightSceneComponent],
   templateUrl: './location-scene.component.html',
   styleUrl: './location-scene.component.css',
 })
@@ -154,6 +155,8 @@ export class LocationSceneComponent implements OnInit, AfterViewInit, OnDestroy 
       invertY: true,
       limitX: 60,
       limitY: 40,
+      // Find layers anywhere in the scene (the Queen City night scene's layers sit inside their own component).
+      selector: '.layer',
     });
     this.parallaxInstance.friction(0.12, 0.12);
     this.parallaxInstance.scalar(9.0, 6.0);
@@ -195,6 +198,12 @@ export class LocationSceneComponent implements OnInit, AfterViewInit, OnDestroy 
   /** Coming-soon houses show on the map but can't be opened by anyone yet. */
   isComingSoon(hotspot: Hotspot): boolean {
     return this.gameData.isComingSoon(hotspot.locationId);
+  }
+
+  /** Which painted scene to show: Queen City (and its locations) use the night scene; everything else the original layers. */
+  get sceneTheme(): 'queen-night' | 'default' {
+    const cityId = this.city?.id ?? this.location?.cityId;
+    return cityId === 'charlotte' ? 'queen-night' : 'default';
   }
 
   /** House position: in the city scene every location's house has its own spot. */

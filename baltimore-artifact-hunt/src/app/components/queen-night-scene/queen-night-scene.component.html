@@ -1,0 +1,69 @@
+<ng-container *ngIf="part === 'back'">
+  <!-- Layer 0 · night sky (doesn't move) -->
+  <div class="layer qn-sky" data-depth="0.00">
+    <div class="qn-moon"></div>
+  </div>
+
+  <!-- Layer 1 · clouds (0.08) -->
+  <div class="layer" data-depth="0.08">
+    <div class="qn-bleed">
+      <div class="qn-cloud" style="left: 26%; top: 18%; width: 15%"></div>
+      <div class="qn-cloud" style="left: 60%; top: 25%; width: 20%"></div>
+      <div class="qn-cloud" style="left: 88%; top: 13%; width: 12%"></div>
+    </div>
+  </div>
+
+  <!-- Layer 2 · Uptown skyline with the crown tower (0.20) -->
+  <div class="layer" data-depth="0.20">
+    <div class="qn-bleed">
+      <div class="qn-skyline">
+        <div class="qn-tower" *ngFor="let b of buildings" [style.width.%]="b.w" [style.height.vh]="b.h">
+          <div class="qn-crown" *ngIf="b.crown"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layer 3 · tree canopy, ground and the light rail (0.35) -->
+  <div class="layer" data-depth="0.35">
+    <div class="qn-bleed">
+      <div class="qn-ground"></div>
+      <div class="qn-trees qn-trees-back"></div>
+      <div class="qn-trees qn-trees-front"></div>
+      <div class="qn-rail"></div>
+      <div class="qn-train"><div class="qn-train-windows"></div></div>
+    </div>
+  </div>
+
+  <!-- Layer 4 · street level (0.55, same depth as the houses) -->
+  <div class="layer" data-depth="0.55">
+    <div class="qn-bleed">
+      <div class="qn-store qn-store-left">
+        <div class="qn-store-top"></div>
+        <div class="qn-awning"></div>
+        <div class="qn-store-glass"></div>
+      </div>
+      <div class="qn-store qn-store-right">
+        <div class="qn-store-top"></div>
+        <div class="qn-awning"></div>
+        <div class="qn-store-glass"></div>
+      </div>
+      <div class="qn-street-tree" style="left: 50%"><div class="qn-canopy"></div></div>
+      <div class="qn-sidewalk"></div>
+    </div>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="part === 'front'">
+  <!-- Layer 5 · foreground frame: dogwood branch and the Trade & Tryon sign (0.85) -->
+  <div class="layer" data-depth="0.85">
+    <div class="qn-bleed">
+      <div class="qn-branch"></div>
+      <div class="qn-twig"></div>
+      <div class="qn-blossom" *ngFor="let bl of blossoms" [style.left.%]="bl.x" [style.top.%]="bl.y"></div>
+      <div class="qn-pole"></div>
+      <div class="qn-sign qn-sign-trade">TRADE ST</div>
+      <div class="qn-sign qn-sign-tryon">TRYON ST</div>
+    </div>
+  </div>
+</ng-container>

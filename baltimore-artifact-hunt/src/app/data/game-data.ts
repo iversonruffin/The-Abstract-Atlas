@@ -122,7 +122,7 @@ export const HOTSPOTS: Hotspot[] = [
     },
     unlockRequires: [],
     position: { xPct: 50, yPct: 78 },
-    cityPosition: { xPct: 50, yPct: 78 },
+    cityPosition: { xPct: 67, yPct: 78 }, // was 50: two houses per city, evenly spaced
   },
   {
     id: 'federal-hill-beacon',
@@ -185,7 +185,7 @@ export const HOTSPOTS: Hotspot[] = [
     characters: [],
     unlockRequires: [],
     position: { xPct: 50, yPct: 78 },
-    cityPosition: { xPct: 20, yPct: 78 },
+    cityPosition: { xPct: 33, yPct: 78 }, // was 20: two houses per city, evenly spaced
   },
   // Pigtown was replaced by Ridgely's. Its hotspot below is no longer listed on the map (no location points to it).
   {
@@ -224,7 +224,7 @@ export const HOTSPOTS: Hotspot[] = [
   // ---------------------------------------------------------------------------
   // CHARLOTTE. Story text and character bios are PLACEHOLDERS until the real copy is written.
   // Trivia is a first draft of well-known facts: fact-check before launch.
-  // `cityPosition` is where the house sits in the city scene (x = 20 / 50 / 80).
+  // `cityPosition` is where the house sits in the city scene (x = 33 / 67 with two locations per city; was 20 / 50 / 80).
   // To add a person to a place: push { id, name, photo, story } into its `characters`.
   // ---------------------------------------------------------------------------
   {
@@ -266,7 +266,7 @@ export const HOTSPOTS: Hotspot[] = [
     ],
     unlockRequires: [],
     position: { xPct: 50, yPct: 78 },
-    cityPosition: { xPct: 20, yPct: 78 },
+    cityPosition: { xPct: 33, yPct: 78 }, // was 20: two houses per city, evenly spaced
   },
   {
     id: 'university-beacon',
@@ -298,7 +298,7 @@ export const HOTSPOTS: Hotspot[] = [
     characters: [],
     unlockRequires: [],
     position: { xPct: 50, yPct: 78 },
-    cityPosition: { xPct: 50, yPct: 78 },
+    cityPosition: { xPct: 67, yPct: 78 }, // was 50: two houses per city, evenly spaced
   },
   {
     id: 'noda-beacon',
