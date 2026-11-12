@@ -506,3 +506,13 @@
   background: rgba(0, 0, 0, 0.55);
   color: #fff;
 }
+
+/* Event houses: what the house is for (Trivia / Story / People), above the location name. */
+.beacon-kind {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a8641a;
+  line-height: 1.2;
+}

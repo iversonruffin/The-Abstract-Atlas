@@ -2,6 +2,7 @@ import type { APIGatewayProxyEventV2 } from 'aws-lambda';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createApi } from '../src/api.js';
 import { getHotspot } from '../src/content.js';
+import { FEEDBACK_MS } from '../src/scoring.js';
 import { MemoryRepo } from './memoryRepo.js';
 
 // The guest location's challenge (Ridgely's). Expected scores scale with its question count,
@@ -9,6 +10,9 @@ import { MemoryRepo } from './memoryRepo.js';
 const GUEST_HS = 'ridgelys-beacon';
 const GUEST_LOC = 'ridgelys';
 const N = getHotspot(GUEST_HS)!.questions.length;
+// Seconds per question (15 since 11/11). pts(s) = points for a right answer given after s seconds.
+const T = getHotspot(GUEST_HS)!.questions[0]!.timeLimitSeconds;
+const pts = (s: number) => 100 + 10 * (T - s);
 
 const SECRET = 'x'.repeat(40);
 
@@ -68,7 +72,8 @@ async function playRun(headers: Record<string, string>, hotspotId: string, opts:
     const original = hotspot.questions.find((q) => q.id === question.id)!;
     const correctText = original.choices[original.correctIndex];
     const choiceIndex = allCorrect ? question.choices.indexOf(correctText) : (question.choices.indexOf(correctText) + 1) % question.choices.length;
-    clock += secondsPerQuestion * 1000;
+    // A player sees the next question only after the feedback pause, then answers s seconds later.
+    clock += (i > 0 ? FEEDBACK_MS : 0) + secondsPerQuestion * 1000;
     last = await call('POST', `/challenges/${hotspotId}/answer`, { headers, body: { attemptId, choiceIndex } });
     expect(last.status).toBe(200);
     question = last.json.next;
@@ -82,7 +87,7 @@ describe('guest flow', () => {
     const guest = await newGuest();
     const { json } = await call('GET', '/locations', { headers: guest });
     const byId = Object.fromEntries(json.locations.map((l: any) => [l.id, l.accessible]));
-    expect(byId).toEqual({ ridgelys: true, 'inner-harbor': false, 'federal-hill': false, uptown: true, university: false, noda: false });
+    expect(byId).toEqual({ ridgelys: true, 'inner-harbor': false, uptown: true, university: false });
   });
 
   it('blocks guests from other locations with the list of what signing up unlocks', async () => {
@@ -100,10 +105,10 @@ describe('guest flow', () => {
     expect(start.json.question.choices).toHaveLength(4);
   });
 
-  it('scores on the server: 100 + 10/sec left, perfect run at 2s each = N * 180', async () => {
+  it('scores on the server: 100 + 10/sec left, perfect run at 2s each = N * pts(2)', async () => {
     const guest = await newGuest();
     const result = (await playRun(guest, GUEST_HS)).result;
-    expect(result).toMatchObject({ correctAnswers: N, totalQuestions: N, score: N * 180, completed: true, badgeEarned: true });
+    expect(result).toMatchObject({ correctAnswers: N, totalQuestions: N, score: N * pts(2), completed: true, badgeEarned: true });
     expect(result.badge.id).toBe('delight-seeker');
   });
 
@@ -149,7 +154,7 @@ describe('guest flow', () => {
 });
 
 describe('question timing', () => {
-  it('does not charge the 0.9s feedback pause against the next question', async () => {
+  it('does not charge the feedback pause against the next question', async () => {
     const headers = user('timer');
     const start = await call('POST', `/challenges/${GUEST_HS}/start`, { headers });
     const hs = getHotspot(GUEST_HS)!;
@@ -157,13 +162,13 @@ describe('question timing', () => {
       call('POST', `/challenges/${GUEST_HS}/answer`, { headers, body: { attemptId: start.json.attemptId, choiceIndex: idx } });
     const correctShown = (q: any) => q.choices.indexOf(hs.questions.find((x) => x.id === q.id)!.choices[hs.questions.find((x) => x.id === q.id)!.correctIndex]);
 
-    clock += 1000; // Q1 answered after 1s -> 100 + 9*10
+    clock += 1000; // Q1 answered after 1s
     const r1 = await answer(start.json.question, correctShown(start.json.question));
-    expect(r1.json.pointsAwarded).toBe(190);
+    expect(r1.json.pointsAwarded).toBe(pts(1));
 
     clock += 900; // client is still showing feedback; Q2 has not even appeared yet
     const r2 = await answer(r1.json.next, correctShown(r1.json.next));
-    expect(r2.json.pointsAwarded).toBe(200); // elapsed clamps to 0, full 10s left
+    expect(r2.json.pointsAwarded).toBe(pts(0)); // elapsed clamps to 0, full time left
   });
 });
 
@@ -175,21 +180,20 @@ describe('accounts and leaderboard', () => {
     }
   });
 
-  it('keeps coming-soon locations closed to everyone, accounts included', async () => {
-    for (const id of ['federal-hill-beacon', 'noda-beacon']) {
-      expect((await call('POST', `/challenges/${id}/start`, { headers: user('u1') })).status).toBe(403);
-      expect((await call('POST', `/challenges/${id}/start`, { headers: await newGuest() })).status).toBe(403);
+  it('has no Federal Hill, NoDa or Pigtown for anyone (off the map), and lists the 4 open locations', async () => {
+    for (const id of ['federal-hill-beacon', 'noda-beacon', 'pigtown-beacon']) {
+      expect((await call('POST', `/challenges/${id}/start`, { headers: user('u1') })).status).toBe(404);
+      expect((await call('POST', `/challenges/${id}/start`, { headers: await newGuest() })).status).toBe(404);
     }
     const { json } = await call('GET', '/locations');
-    const soon = json.locations.filter((l: any) => l.comingSoon).map((l: any) => l.id);
-    expect(soon).toEqual(['federal-hill', 'noda']);
+    expect(json.locations.map((l: any) => l.id)).toEqual(['ridgelys', 'inner-harbor', 'uptown', 'university']);
   });
 
   it('keeps only the best score per hotspot', async () => {
     const headers = user('u1');
-    await playRun(headers, GUEST_HS, { secondsPerQuestion: 2 }); // N * 180
-    const worse = (await playRun(headers, GUEST_HS, { secondsPerQuestion: 8 })).result; // N * 120
-    expect(worse).toMatchObject({ score: N * 120, bestScore: N * 180, isNewBest: false });
+    await playRun(headers, GUEST_HS, { secondsPerQuestion: 2 }); // N * pts(2)
+    const worse = (await playRun(headers, GUEST_HS, { secondsPerQuestion: 8 })).result; // N * pts(8)
+    expect(worse).toMatchObject({ score: N * pts(8), bestScore: N * pts(2), isNewBest: false });
   });
 
   it('ranks registered players and leaves guests off the leaderboard', async () => {
@@ -235,7 +239,7 @@ describe('claiming guest progress on sign-up', () => {
 
     const board = await call('GET', `/leaderboard/${GUEST_LOC}`);
     expect(board.json.entries).toHaveLength(1);
-    expect(board.json.entries[0]).toMatchObject({ rank: 1, score: N * 180 });
+    expect(board.json.entries[0]).toMatchObject({ rank: 1, score: N * pts(2) });
     expect(JSON.stringify(board.json)).not.toContain('newbie');
 
     // The guest profile is gone, and the guest can no longer see old progress.
@@ -245,14 +249,14 @@ describe('claiming guest progress on sign-up', () => {
 
   it('merges with an existing account, keeping the best of each', async () => {
     const guest = await newGuest();
-    await playRun(guest, GUEST_HS, { secondsPerQuestion: 1 }); // N * 190
+    await playRun(guest, GUEST_HS, { secondsPerQuestion: 1 }); // N * pts(1)
     const headers = user('vet', 'vet@example.com');
-    await playRun(headers, GUEST_HS, { secondsPerQuestion: 6 }); // N * 140
+    await playRun(headers, GUEST_HS, { secondsPerQuestion: 6 }); // N * pts(6)
     await playRun(headers, 'inner-harbor-beacon', { secondsPerQuestion: 2 });
 
     const claim = await call('POST', '/account/claim', { headers: { ...headers, ...guest } });
     const fh = claim.json.results.find((r: any) => r.hotspotId === GUEST_HS);
-    expect(fh.score).toBe(N * 190);
+    expect(fh.score).toBe(N * pts(1));
     expect(claim.json.badges).toHaveLength(2);
   });
 

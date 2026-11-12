@@ -35,6 +35,8 @@ export interface ServerQuestion {
   prompt: string;
   choices: string[];
   timeLimitSeconds: number;
+  /** Picture to show above the question, if it has one. */
+  image?: string;
 }
 
 export interface StartResponse {
@@ -72,6 +74,8 @@ export interface AnswerResponse {
   correctIndex: number;
   pointsAwarded: number;
   secondsLeft: number;
+  /** Tailored line for this answer, if the question has one. */
+  response?: string;
   done: boolean;
   next?: ServerQuestion;
   result?: ChallengeResult;

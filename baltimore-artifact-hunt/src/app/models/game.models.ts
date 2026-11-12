@@ -13,8 +13,16 @@ export interface TriviaQuestion {
   prompt: string;
   choices: string[];
   correctIndex: number;
-  /** Seconds allowed to answer, per the game bible (10s per question). */
+  /** Seconds allowed to answer (15s per question since 11/11; was 10). */
   timeLimitSeconds: number;
+  /** Optional picture shown above the question. Path under public/, e.g. 'images/trivia/ctc-station.jpg'. */
+  image?: string;
+  /** Optional line shown after any wrong answer, e.g. "Ok, well that's DEFINITELY not right." */
+  wrongResponse?: string;
+  /** Optional line shown after the right answer. */
+  correctResponse?: string;
+  /** Optional line per choice (same order as choices; null = use the lines above). Wins over the others. */
+  choiceResponses?: (string | null)[];
 }
 
 export interface Badge {

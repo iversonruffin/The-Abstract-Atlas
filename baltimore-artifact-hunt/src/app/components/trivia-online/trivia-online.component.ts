@@ -9,7 +9,7 @@ type AnswerState = 'unanswered' | 'correct' | 'incorrect' | 'timeout';
 type Phase = 'loading' | 'question' | 'done' | 'error';
 
 /** How long right/wrong feedback shows before the next question. Must match FEEDBACK_MS in server/src/scoring.ts. */
-const FEEDBACK_MS = 900;
+const FEEDBACK_MS = 2500; // was 900: long enough to read a tailored line
 
 /**
  * Server-driven version of TriviaChallengeComponent. The server supplies the questions,
@@ -32,6 +32,8 @@ export class TriviaOnlineComponent implements OnChanges, OnDestroy {
   answerState: AnswerState = 'unanswered';
   selectedChoice: number | null = null;
   correctChoice: number | null = null;
+  /** Tailored line for the last answer, if the question has one. */
+  responseLine: string | null = null;
   secondsLeft = 10;
   runningScore = 0;
   result: ChallengeResult | null = null;
@@ -94,6 +96,7 @@ export class TriviaOnlineComponent implements OnChanges, OnDestroy {
     this.answerState = 'unanswered';
     this.selectedChoice = null;
     this.correctChoice = null;
+    this.responseLine = null;
     this.submitting = false;
     this.secondsLeft = q.timeLimitSeconds;
     this.clearTimer();
@@ -114,6 +117,7 @@ export class TriviaOnlineComponent implements OnChanges, OnDestroy {
       if (run !== this.runId) return;
       this.correctChoice = res.correctIndex;
       this.answerState = choiceIndex === null || res.timedOut ? 'timeout' : res.correct ? 'correct' : 'incorrect';
+      this.responseLine = res.response ?? null;
       this.runningScore += res.pointsAwarded;
       this.advanceHandle = setTimeout(() => {
         if (res.done && res.result) {

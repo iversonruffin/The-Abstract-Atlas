@@ -6,6 +6,7 @@ import type { APIGatewayProxyEventV2 } from 'aws-lambda';
 import { describe, expect, it } from 'vitest';
 import { createApi } from '../src/api.js';
 import { getHotspot } from '../src/content.js';
+import { FEEDBACK_MS } from '../src/scoring.js';
 import { DynamoRepo } from '../src/dynamoRepo.js';
 import { HotspotResult } from '../src/types.js';
 import { FakeDoc } from './fakeDoc.js';
@@ -84,7 +85,7 @@ describe('guest -> account claim against the real DynamoRepo', () => {
     for (let i = 0; i < hotspot.questions.length; i++) {
       const original = hotspot.questions.find((q) => q.id === question.id)!;
       const choiceIndex = question.choices.indexOf(original.choices[original.correctIndex]);
-      clock += 2000;
+      clock += (i > 0 ? FEEDBACK_MS : 0) + 2000; // feedback pause, then answer after 2s
       const res = await call('POST', '/challenges/ridgelys-beacon/answer', guest, { attemptId: start.json.attemptId, choiceIndex });
       question = res.json.next;
     }
@@ -99,11 +100,11 @@ describe('guest -> account claim against the real DynamoRepo', () => {
     // It sticks: a fresh request as the account still has the badge and score.
     const me = await call('GET', '/me', user);
     expect(me.json.results).toHaveLength(1);
-    expect(me.json.results[0]).toMatchObject({ hotspotId: 'ridgelys-beacon', completed: true, badgeEarned: true, score: hotspot.questions.length * 180 });
+    expect(me.json.results[0]).toMatchObject({ hotspotId: 'ridgelys-beacon', completed: true, badgeEarned: true, score: hotspot.questions.length * (100 + 10 * (hotspot.questions[0]!.timeLimitSeconds - 2)) });
     expect(doc.items.get(doc.key('PLAYER#user-1', 'RESULT#ridgelys-beacon'))?.['ttl']).toBeUndefined();
 
     const board = await call('GET', '/leaderboard/ridgelys');
     expect(board.json.entries).toHaveLength(1);
-    expect(board.json.entries[0].score).toBe(hotspot.questions.length * 180);
+    expect(board.json.entries[0].score).toBe(hotspot.questions.length * (100 + 10 * (hotspot.questions[0]!.timeLimitSeconds - 2)));
   });
 });

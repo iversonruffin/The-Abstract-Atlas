@@ -6,7 +6,7 @@ import { ProgressService } from '../../services/progress.service';
 import { TriviaChallengeComponent } from '../trivia-challenge/trivia-challenge.component';
 import { TriviaOnlineComponent } from '../trivia-online/trivia-online.component';
 
-type ModalView = 'guide' | 'story' | 'challenge' | 'characters';
+export type ModalView = 'guide' | 'story' | 'challenge' | 'characters';
 
 @Component({
   selector: 'app-hotspot-modal',
@@ -18,6 +18,8 @@ type ModalView = 'guide' | 'story' | 'challenge' | 'characters';
 export class HotspotModalComponent {
   @Input({ required: true }) hotspot!: Hotspot;
   @Input() active = false;
+  /** Which view the modal opens on: the house that was clicked decides (trivia -> guide, story -> story, people -> characters). */
+  @Input() startView: ModalView = 'guide';
   @Output() closed = new EventEmitter<void>();
 
   view: ModalView = 'guide';
@@ -30,8 +32,8 @@ export class HotspotModalComponent {
   }
 
   ngOnChanges() {
-    // Reset to the guide view every time a new hotspot is opened.
-    if (this.active) this.view = 'guide';
+    // Reset every time a house is opened: to the view that house is for (the guide by default).
+    if (this.active) this.view = this.startView;
   }
 
   showGuide() {

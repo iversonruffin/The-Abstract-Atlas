@@ -9,9 +9,10 @@ import { City, CityLocation, Hotspot } from '../models/game.models';
 // swap in real history/art facts before this goes live.
 // ---------------------------------------------------------------------------
 
-// WHO CAN PLAY WHAT (MVP):
-//   Charm City:  Ridgely's = guests,  Inner Harbor = unlocks at sign-up,  Federal Hill = coming soon
-//   Queen City:  Uptown = guests,     University = unlocks at sign-up,    NoDa = coming soon
+// WHO CAN PLAY WHAT (MVP, 4 locations):
+//   Charm City:  Ridgely's = guests,  Inner Harbor = unlocks at sign-up
+//   Queen City:  Uptown = guests,     University = unlocks at sign-up
+//   Federal Hill and NoDa are commented out below (off the map for now).
 // The server enforces this in server/src/content.ts (guestAccessible / comingSoon). Keep both in sync.
 export const CITY_LOCATIONS: CityLocation[] = [
   // ---- Charm City (Baltimore) ----
@@ -30,14 +31,15 @@ export const CITY_LOCATIONS: CityLocation[] = [
     tagline: "Baltimore's historic waterfront heart",
     hotspotIds: ['inner-harbor-beacon'],
   },
-  {
-    id: 'federal-hill',
-    cityId: 'baltimore',
-    name: 'Federal Hill',
-    tagline: 'Rowhouses, a hilltop park, and harbor views',
-    hotspotIds: ['federal-hill-beacon'],
-    comingSoon: true,
-  },
+  // Federal Hill is off the map for now (11/11). Uncomment to bring it back.
+  // {
+  //   id: 'federal-hill',
+  //   cityId: 'baltimore',
+  //   name: 'Federal Hill',
+  //   tagline: 'Rowhouses, a hilltop park, and harbor views',
+  //   hotspotIds: ['federal-hill-beacon'],
+  //   comingSoon: true,
+  // },
   // Pigtown was replaced by Ridgely's. Kept here for reference.
   // {
   //   id: 'pigtown',
@@ -61,14 +63,15 @@ export const CITY_LOCATIONS: CityLocation[] = [
     tagline: 'Campus life and University City',
     hotspotIds: ['university-beacon'],
   },
-  {
-    id: 'noda',
-    cityId: 'charlotte',
-    name: 'NoDa',
-    tagline: "Charlotte's arts district, in an old mill village",
-    hotspotIds: ['noda-beacon'],
-    comingSoon: true,
-  },
+  // NoDa is off the map for now (11/11). Uncomment to bring it back.
+  // {
+  //   id: 'noda',
+  //   cityId: 'charlotte',
+  //   name: 'NoDa',
+  //   tagline: "Charlotte's arts district, in an old mill village",
+  //   hotspotIds: ['noda-beacon'],
+  //   comingSoon: true,
+  // },
 ];
 
 /** Cities shown on the home page. Queen City (Charlotte) first, then Charm City (Baltimore). Ids stay the same. */
@@ -76,14 +79,14 @@ export const CITIES: City[] = [
   {
     id: 'charlotte',
     name: 'Queen City',
-    tagline: 'Charlotte: Uptown, University, and NoDa',
-    locationIds: ['uptown', 'university', 'noda'],
+    tagline: 'Charlotte: Uptown and University',
+    locationIds: ['uptown', 'university'], // NoDa removed for now: 'noda'
   },
   {
     id: 'baltimore',
     name: 'Charm City',
-    tagline: "Baltimore: Ridgely's, the Inner Harbor, and Federal Hill",
-    locationIds: ['ridgelys', 'inner-harbor', 'federal-hill'],
+    tagline: "Baltimore: Ridgely's and the Inner Harbor",
+    locationIds: ['ridgelys', 'inner-harbor'], // Federal Hill removed for now: 'federal-hill'
   },
 ];
 
@@ -330,6 +333,8 @@ export const HOTSPOTS: Hotspot[] = [
   },
 ];
 
-function q(id: string, prompt: string, choices: string[], correctIndex: number) {
-  return { id, prompt, choices, correctIndex, timeLimitSeconds: 10 };
+// Optional 5th argument: { image, wrongResponse, correctResponse, choiceResponses }. Example:
+//   q('up-8', 'Which stop drops you off here?', ['CTC', ...], 0, { image: 'images/trivia/ctc.jpg', wrongResponse: "Ok, well that's DEFINITELY not right." })
+function q(id: string, prompt: string, choices: string[], correctIndex: number, extra: { image?: string; wrongResponse?: string; correctResponse?: string; choiceResponses?: (string | null)[] } = {}) {
+  return { id, prompt, choices, correctIndex, timeLimitSeconds: 15, ...extra }; // was 10
 }

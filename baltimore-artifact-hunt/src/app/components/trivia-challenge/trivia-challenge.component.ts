@@ -44,6 +44,14 @@ export class TriviaChallengeComponent implements OnChanges, OnDestroy {
     return this.questions[this.questionIndex];
   }
 
+  /** Tailored line for the current answer, if the question has one (same rules as the server). */
+  get responseLine(): string | null {
+    const q = this.currentQuestion;
+    if (!q || this.answerState === 'unanswered' || this.answerState === 'timeout') return null;
+    const perChoice = this.selectedChoice !== null ? q.choiceResponses?.[this.selectedChoice] ?? undefined : undefined;
+    return perChoice ?? (this.answerState === 'correct' ? q.correctResponse : q.wrongResponse) ?? null;
+  }
+
   startChallenge() {
     this.clearTimer();
     this.questionIndex = 0;
@@ -63,7 +71,7 @@ export class TriviaChallengeComponent implements OnChanges, OnDestroy {
       if (this.secondsLeft <= 0) {
         this.clearTimer();
         this.answerState = 'timeout';
-        setTimeout(() => this.advance(), 900);
+        setTimeout(() => this.advance(), 2500); // was 900
       }
     }, 1000);
   }
@@ -84,7 +92,7 @@ export class TriviaChallengeComponent implements OnChanges, OnDestroy {
       this.score += 100 + this.secondsLeft * 10;
     }
 
-    setTimeout(() => this.advance(), 900);
+    setTimeout(() => this.advance(), 2500); // was 900
   }
 
   private advance() {

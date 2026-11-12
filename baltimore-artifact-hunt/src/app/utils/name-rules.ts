@@ -19,6 +19,8 @@ export const EXTRA_BLOCKED: string[] = [
   'jackass',
   'bullshit',
   'motherfuck',
+  '|jew|',
+
   // '|examplebadword|',   <- whole-word form, for short words that appear inside innocent ones
 ];
 

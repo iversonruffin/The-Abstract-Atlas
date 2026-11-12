@@ -15,6 +15,14 @@ export interface Question {
   choices: string[];
   correctIndex: number;
   timeLimitSeconds: number;
+  /** Optional picture shown above the question. Path under public/, e.g. 'images/trivia/ctc-station.jpg'. */
+  image?: string;
+  /** Optional line shown after any wrong answer, e.g. "Ok, well that's DEFINITELY not right." */
+  wrongResponse?: string;
+  /** Optional line shown after the right answer. */
+  correctResponse?: string;
+  /** Optional line per choice (same order as choices; null = use the lines above). Wins over the others. */
+  choiceResponses?: (string | null)[];
 }
 
 export interface Badge {
@@ -43,9 +51,10 @@ export interface Location {
   comingSoon?: boolean;
 }
 
-// WHO CAN PLAY WHAT (MVP):
-//   Charm City:  Ridgely's = guests,  Inner Harbor = unlocks at sign-up,  Federal Hill = coming soon
-//   Queen City:  Uptown = guests,     University = unlocks at sign-up,    NoDa = coming soon
+// WHO CAN PLAY WHAT (MVP, 4 locations):
+//   Charm City:  Ridgely's = guests,  Inner Harbor = unlocks at sign-up
+//   Queen City:  Uptown = guests,     University = unlocks at sign-up
+//   Federal Hill and NoDa are commented out below (off the map for now).
 export const LOCATIONS: Location[] = [
   // ---- Charm City (Baltimore) ----
   {
@@ -62,14 +71,15 @@ export const LOCATIONS: Location[] = [
     hotspotIds: ['inner-harbor-beacon'],
     guestAccessible: false,
   },
-  {
-    id: 'federal-hill',
-    name: 'Federal Hill',
-    tagline: 'Rowhouses, a hilltop park, and harbor views',
-    hotspotIds: ['federal-hill-beacon'],
-    guestAccessible: false,
-    comingSoon: true,
-  },
+  // Federal Hill is off the map for now (11/11). Uncomment to bring it back.
+  // {
+  //   id: 'federal-hill',
+  //   name: 'Federal Hill',
+  //   tagline: 'Rowhouses, a hilltop park, and harbor views',
+  //   hotspotIds: ['federal-hill-beacon'],
+  //   guestAccessible: false,
+  //   comingSoon: true,
+  // },
   // Pigtown was replaced by Ridgely's. Kept here for reference.
   // {
   //   id: 'pigtown',
@@ -93,18 +103,20 @@ export const LOCATIONS: Location[] = [
     hotspotIds: ['university-beacon'],
     guestAccessible: false,
   },
-  {
-    id: 'noda',
-    name: 'NoDa',
-    tagline: "Charlotte's arts district, in an old mill village",
-    hotspotIds: ['noda-beacon'],
-    guestAccessible: false,
-    comingSoon: true,
-  },
+  // NoDa is off the map for now (11/11). Uncomment to bring it back.
+  // {
+  //   id: 'noda',
+  //   name: 'NoDa',
+  //   tagline: "Charlotte's arts district, in an old mill village",
+  //   hotspotIds: ['noda-beacon'],
+  //   guestAccessible: false,
+  //   comingSoon: true,
+  // },
 ];
 
-function q(id: string, prompt: string, choices: string[], correctIndex: number): Question {
-  return { id, prompt, choices, correctIndex, timeLimitSeconds: 10 };
+// Optional 5th argument: { image, wrongResponse, correctResponse, choiceResponses } (same as the frontend).
+function q(id: string, prompt: string, choices: string[], correctIndex: number, extra: { image?: string; wrongResponse?: string; correctResponse?: string; choiceResponses?: (string | null)[] } = {}): Question {
+  return { id, prompt, choices, correctIndex, timeLimitSeconds: 15, ...extra }; // was 10
 }
 
 export const HOTSPOTS: Hotspot[] = [

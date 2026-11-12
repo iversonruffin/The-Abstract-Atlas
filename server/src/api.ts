@@ -124,6 +124,7 @@ export function createApi(deps: ApiDeps) {
       prompt: question.prompt,
       choices: order.map((originalIndex) => question.choices[originalIndex]!),
       timeLimitSeconds: question.timeLimitSeconds,
+      image: question.image,
     };
   }
 
@@ -184,7 +185,8 @@ export function createApi(deps: ApiDeps) {
       const c = requireCaller(caller);
       const hotspot = getHotspot(challenge[1]!);
       if (!hotspot) throw new HttpError(404, 'HOTSPOT_NOT_FOUND', 'No such challenge.');
-      const location = getLocation(hotspot.locationId)!;
+      const location = getLocation(hotspot.locationId);
+      if (!location) throw new HttpError(404, 'HOTSPOT_NOT_FOUND', 'No such challenge.');
       if (!canAccessLocation(c, location)) {
         throw new HttpError(403, 'LOCATION_LOCKED', `Sign up to unlock ${location.name}.`, {
           unlockedBySignUp: locationsUnlockedBySignUp(),
@@ -255,12 +257,17 @@ export function createApi(deps: ApiDeps) {
     });
     attempt.correct += outcome.correct ? 1 : 0;
     attempt.score += outcome.points;
+    // The tailored line, if this question has one: a line for the picked choice wins, then right/wrong lines.
+    const perChoice = chosenOriginal !== null ? question.choiceResponses?.[chosenOriginal] ?? undefined : undefined;
+    const response =
+      perChoice ?? (outcome.correct ? question.correctResponse : chosenOriginal !== null && !outcome.timedOut ? question.wrongResponse : undefined);
     const feedback = {
       correct: outcome.correct,
       timedOut: outcome.timedOut,
       correctIndex: order.indexOf(question.correctIndex),
       pointsAwarded: outcome.points,
       secondsLeft: outcome.secondsLeft,
+      response,
     };
 
     if (attempt.questionIndex < hotspot.questions.length - 1) {

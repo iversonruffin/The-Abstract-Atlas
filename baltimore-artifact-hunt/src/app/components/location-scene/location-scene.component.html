@@ -13,6 +13,39 @@
       <div class="layer pier" data-depth="0.55"></div>
 
       <div class="layer interactive" data-depth="0.55">
+        <!-- Event houses (11/11): each house is a thing to do (Trivia, Story, People), not a place. -->
+        <div
+          *ngFor="let house of houses"
+          [id]="'beacon-' + house.id"
+          class="beacon"
+          [class.locked]="!isUnlocked(house.hotspot)"
+          [class.coming-soon]="isComingSoon(house.hotspot)"
+          [class.completed]="isHouseCompleted(house)"
+          [style.left.%]="house.pos.xPct"
+          [style.bottom.%]="100 - house.pos.yPct"
+          tabindex="0"
+          role="button"
+          [attr.aria-label]="house.label + ' at ' + house.hotspot.name"
+          (click)="openHouse(house)"
+          (keydown.enter)="openHouse(house)"
+        >
+          <div class="beacon-label">
+            <span class="beacon-kind">{{ house.label }}</span>
+            {{ house.hotspot.name }}
+            <span *ngIf="!isUnlocked(house.hotspot) && !isComingSoon(house.hotspot)" title="Locked">🔒</span>
+            <span *ngIf="isHouseCompleted(house)" title="Completed">✓</span>
+          </div>
+          <div class="beacon-ping" *ngIf="isUnlocked(house.hotspot) && !isHouseCompleted(house)"></div>
+          <svg class="beacon-house" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="32,6 58,28 6,28" fill="#c0392b" stroke="#7a231b" stroke-width="2" />
+            <rect x="14" y="28" width="36" height="26" fill="#f4ede0" stroke="#7a231b" stroke-width="2" />
+            <rect x="27" y="36" width="10" height="18" fill="#7a5a34" />
+            <rect x="18" y="34" width="8" height="8" fill="#a9d8ef" stroke="#7a231b" stroke-width="1.5" />
+            <rect x="38" y="34" width="8" height="8" fill="#a9d8ef" stroke="#7a231b" stroke-width="1.5" />
+          </svg>
+        </div>
+
+        <!-- Before 11/11: one house per location. Kept for reference.
         <div
           *ngFor="let hotspot of hotspots"
           [id]="'beacon-' + hotspot.id"
@@ -43,6 +76,7 @@
             <rect x="38" y="34" width="8" height="8" fill="#a9d8ef" stroke="#7a231b" stroke-width="1.5" />
           </svg>
         </div>
+        -->
       </div>
 
       <div class="layer" data-depth="0.85">
@@ -82,5 +116,5 @@
     <img src="images/bird.png" alt="" />
   </div>
 
-  <app-hotspot-modal *ngIf="activeHotspot" [hotspot]="activeHotspot" [active]="modalActive" (closed)="closeModal()"></app-hotspot-modal>
+  <app-hotspot-modal *ngIf="activeHotspot" [hotspot]="activeHotspot" [active]="modalActive" [startView]="activeView" (closed)="closeModal()"></app-hotspot-modal>
 </ng-container>

@@ -16,7 +16,23 @@ import { AuthUiService } from '../../services/auth-ui.service';
 import { GameApiService } from '../../services/game-api.service';
 import { GameDataService } from '../../services/game-data.service';
 import { ProgressService } from '../../services/progress.service';
-import { HotspotModalComponent } from '../hotspot-modal/hotspot-modal.component';
+import { HotspotModalComponent, ModalView } from '../hotspot-modal/hotspot-modal.component';
+
+/**
+ * A house in the scene (11/11): houses are things to do, not places. Each location gets a Trivia house and a
+ * Story house, plus a People house once it has a character. All use the same house icon for now.
+ */
+export interface SceneHouse {
+  /** Unique per house: '<hotspot id>-trivia' etc. The element id is 'beacon-' + this. */
+  id: string;
+  hotspot: Hotspot;
+  kind: 'trivia' | 'story' | 'people';
+  label: string;
+  /** Which view of the modal this house opens. */
+  view: ModalView;
+  /** Spot in the scene, in % of the screen. */
+  pos: { xPct: number; yPct: number };
+}
 import { LeaderboardComponent } from '../leaderboard/leaderboard.component';
 import { LeaderboardOnlineComponent } from '../leaderboard-online/leaderboard-online.component';
 import { ProgressBarComponent } from '../progress-bar/progress-bar.component';
@@ -46,6 +62,10 @@ export class LocationSceneComponent implements OnInit, AfterViewInit, OnDestroy 
   tiltEnabled = false;
   tiltDenied = false;
   hotspots: Hotspot[] = [];
+  /** The houses drawn in the scene (see SceneHouse). Built from the hotspots. */
+  houses: SceneHouse[] = [];
+  /** The view the modal opens on, set by the house that was clicked. */
+  activeView: ModalView = 'guide';
   activeHotspot: Hotspot | null = null;
   modalActive = false;
   hintVisible = true;
@@ -80,12 +100,14 @@ export class LocationSceneComponent implements OnInit, AfterViewInit, OnDestroy 
       this.leaderboardLocationId = this.cityLocations[0]?.id ?? '';
       this.location = { id: this.city.id, name: this.city.name, tagline: this.city.tagline, hotspotIds: [] };
       this.hotspots = this.gameData.getHotspotsForCity(cityId);
+      this.houses = this.buildHouses();
       return;
     }
 
     const locationId = this.route.snapshot.paramMap.get('locationId') ?? '';
     this.location = this.gameData.getLocation(locationId);
     this.hotspots = this.gameData.getHotspotsForLocation(locationId);
+    this.houses = this.buildHouses();
 
     if (!this.location) {
       this.router.navigate(['/']);
@@ -194,7 +216,33 @@ export class LocationSceneComponent implements OnInit, AfterViewInit, OnDestroy 
     return this.progress.isHotspotCompleted(hotspot.id);
   }
 
-  openHotspot(hotspot: Hotspot) {
+  /** One house per thing to do at each location, spread evenly across the scene in two staggered rows. */
+  private buildHouses(): SceneHouse[] {
+    const list: Omit<SceneHouse, 'pos'>[] = [];
+    for (const h of this.hotspots) {
+      list.push({ id: `${h.id}-trivia`, hotspot: h, kind: 'trivia', label: 'Trivia', view: 'guide' });
+      list.push({ id: `${h.id}-story`, hotspot: h, kind: 'story', label: 'Story', view: 'story' });
+      if (h.characters?.length) list.push({ id: `${h.id}-people`, hotspot: h, kind: 'people', label: 'People', view: 'characters' });
+    }
+    const n = list.length;
+    return list.map((house, i) => ({
+      ...house,
+      pos: { xPct: n === 1 ? 50 : 12 + (76 * i) / (n - 1), yPct: i % 2 === 0 ? 80 : 68 },
+    }));
+  }
+
+  /** Only a trivia house shows a check mark: it's the one you complete. */
+  isHouseCompleted(house: SceneHouse): boolean {
+    return house.kind === 'trivia' && this.isCompleted(house.hotspot);
+  }
+
+  openHouse(house: SceneHouse) {
+    this.activeView = house.view;
+    this.openHotspot(house.hotspot, house.id);
+  }
+
+  /** beaconId: which house element to zoom into (defaults to the old one-house-per-location id). */
+  openHotspot(hotspot: Hotspot, beaconId: string = hotspot.id) {
     if (this.isComingSoon(hotspot)) return; // nothing to open yet, for guests or accounts
     if (this.api.isLocked(hotspot.locationId)) {
       const loc = this.gameData.getLocation(hotspot.locationId);
@@ -203,7 +251,7 @@ export class LocationSceneComponent implements OnInit, AfterViewInit, OnDestroy 
     }
     if (!this.isUnlocked(hotspot)) return;
 
-    const beaconEl = document.getElementById('beacon-' + hotspot.id);
+    const beaconEl = document.getElementById('beacon-' + beaconId);
     const zoomWrap = this.zoomWrapEl?.nativeElement;
     if (beaconEl && zoomWrap) {
       const rect = beaconEl.getBoundingClientRect();

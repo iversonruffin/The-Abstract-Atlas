@@ -7,6 +7,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "names": "node scripts/check-names.mjs",
+    "clear-board": "node scripts/clear-leaderboard.mjs",
     "test": "vitest run",
     "build": "sam build",
     "deploy": "sam deploy --guided"

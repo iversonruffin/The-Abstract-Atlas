@@ -12,6 +12,9 @@
     <span class="trivia-timer" [class.low]="secondsLeft <= 3">{{ secondsLeft }}s</span>
   </div>
 
+  <!-- Picture for this question, if it has one. -->
+  <img class="trivia-image" *ngIf="question.image" [src]="question.image" alt="" />
+
   <h3 class="trivia-prompt">{{ question.prompt }}</h3>
 
   <div class="trivia-choices">
@@ -31,6 +34,8 @@
   <p class="trivia-feedback" *ngIf="answerState === 'timeout'">Time's up!</p>
   <p class="trivia-feedback" *ngIf="answerState === 'correct'">Correct! 🎉</p>
   <p class="trivia-feedback" *ngIf="answerState === 'incorrect'">Not quite.</p>
+  <!-- Tailored line for this answer, if the question has one. -->
+  <p class="trivia-response" *ngIf="responseLine">{{ responseLine }}</p>
 </div>
 
 <div class="trivia-results" *ngIf="phase === 'done' && result as r">
