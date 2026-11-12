@@ -19,6 +19,7 @@ import { ProgressService } from '../../services/progress.service';
 import { HotspotModalComponent, ModalView } from '../hotspot-modal/hotspot-modal.component';
 
 /**
+ * NOT USED right now: the scene went back to one house per location (11/11). Kept so event houses are easy to turn back on.
  * A house in the scene (11/11): houses are things to do, not places. Each location gets a Trivia house and a
  * Story house, plus a People house once it has a character. All use the same house icon for now.
  */
